@@ -1,88 +1,253 @@
-from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+import os
+import logging
+import uuid
+import bcrypt
+import jwt
+import csv
+import io
+from datetime import datetime, timezone, timedelta
+from pydantic import BaseModel, Field
+from typing import Optional
+from fastapi.responses import StreamingResponse
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+JWT_ALGORITHM = "HS256"
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+def get_jwt_secret():
+    return os.environ["JWT_SECRET"]
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {"sub": user_id, "email": email, "exp": datetime.now(timezone.utc) + timedelta(minutes=60), "type": "access"}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+def create_refresh_token(user_id: str) -> str:
+    payload = {"sub": user_id, "exp": datetime.now(timezone.utc) + timedelta(days=7), "type": "refresh"}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
-# Include the router in the main app
+async def get_current_user(request: Request) -> dict:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Nao autenticado")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Token invalido")
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="Usuario nao encontrado")
+        user["_id"] = str(user["_id"])
+        user.pop("password_hash", None)
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expirado")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token invalido")
+
+# --- Auth Models ---
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+# --- Change Models (ITIL v4) ---
+class ChangeCreate(BaseModel):
+    titulo: str
+    descricao: str = ""
+    responsavel: str = ""
+    sistema_afetado: str = ""
+    data_inicio: str
+    data_fim: str = ""
+    status: str = "planejada"
+    impacto: str = "medio"
+    # ITIL fields
+    tipo_mudanca: str = "sistemas"  # infraestrutura, sistemas, sapiens
+    categoria_itil: str = "normal"  # normal, padrao, emergencial
+    prioridade: str = "media"  # critica, alta, media, baixa
+    risco: str = "medio"  # alto, medio, baixo
+    numero_rfc: str = ""
+    justificativa: str = ""
+    plano_rollback: str = ""
+    janela_manutencao: str = ""
+    aprovador: str = ""
+    servicos_impactados: str = ""
+
+class ChangeUpdate(BaseModel):
+    titulo: Optional[str] = None
+    descricao: Optional[str] = None
+    responsavel: Optional[str] = None
+    sistema_afetado: Optional[str] = None
+    data_inicio: Optional[str] = None
+    data_fim: Optional[str] = None
+    status: Optional[str] = None
+    impacto: Optional[str] = None
+    # ITIL fields
+    tipo_mudanca: Optional[str] = None
+    categoria_itil: Optional[str] = None
+    prioridade: Optional[str] = None
+    risco: Optional[str] = None
+    numero_rfc: Optional[str] = None
+    justificativa: Optional[str] = None
+    plano_rollback: Optional[str] = None
+    janela_manutencao: Optional[str] = None
+    aprovador: Optional[str] = None
+    servicos_impactados: Optional[str] = None
+
+# --- Auth Routes ---
+@api_router.post("/auth/login")
+async def login(req: LoginRequest, response: Response):
+    email = req.email.strip().lower()
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
+    if not verify_password(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
+    user_id = str(user["_id"])
+    access_token = create_access_token(user_id, email)
+    refresh_token = create_refresh_token(user_id)
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    return {"id": user_id, "email": user["email"], "name": user.get("name", ""), "role": user.get("role", "user"), "token": access_token}
+
+@api_router.post("/auth/register")
+async def register(req: RegisterRequest, response: Response):
+    email = req.email.strip().lower()
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email ja cadastrado")
+    hashed = hash_password(req.password)
+    user_doc = {"email": email, "password_hash": hashed, "name": req.name, "role": "user", "created_at": datetime.now(timezone.utc).isoformat()}
+    result = await db.users.insert_one(user_doc)
+    user_id = str(result.inserted_id)
+    access_token = create_access_token(user_id, email)
+    refresh_token = create_refresh_token(user_id)
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    return {"id": user_id, "email": email, "name": req.name, "role": "user", "token": access_token}
+
+@api_router.get("/auth/me")
+async def get_me(request: Request):
+    user = await get_current_user(request)
+    return user
+
+@api_router.post("/auth/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return {"message": "Logout realizado"}
+
+# --- Changes CRUD ---
+@api_router.get("/changes")
+async def get_changes(request: Request):
+    await get_current_user(request)
+    changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
+    return changes
+
+@api_router.post("/changes", status_code=201)
+async def create_change(change: ChangeCreate, request: Request):
+    user = await get_current_user(request)
+    doc = change.model_dump()
+    doc["id"] = str(uuid.uuid4())
+    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    doc["updated_at"] = datetime.now(timezone.utc).isoformat()
+    doc["created_by"] = user.get("name", user.get("email", ""))
+    await db.changes.insert_one(doc)
+    result = await db.changes.find_one({"id": doc["id"]}, {"_id": 0})
+    return result
+
+@api_router.put("/changes/{change_id}")
+async def update_change(change_id: str, change: ChangeUpdate, request: Request):
+    await get_current_user(request)
+    update_data = {k: v for k, v in change.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.changes.update_one({"id": change_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Mudanca nao encontrada")
+    updated = await db.changes.find_one({"id": change_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/changes/{change_id}")
+async def delete_change(change_id: str, request: Request):
+    await get_current_user(request)
+    result = await db.changes.delete_one({"id": change_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Mudanca nao encontrada")
+    return {"message": "Mudanca excluida"}
+
+@api_router.get("/changes/export/csv")
+async def export_csv(request: Request):
+    await get_current_user(request)
+    changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Titulo", "Descricao", "Tipo Mudanca", "Categoria ITIL", "Responsavel", "Aprovador", "Sistema Afetado", "Servicos Impactados", "Data Inicio", "Data Fim", "Janela Manutencao", "Status", "Prioridade", "Impacto", "Risco", "Numero RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
+    for c in changes:
+        writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("tipo_mudanca",""), c.get("categoria_itil",""), c.get("responsavel",""), c.get("aprovador",""), c.get("sistema_afetado",""), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("janela_manutencao",""), c.get("status",""), c.get("prioridade",""), c.get("impacto",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("created_by",""), c.get("created_at","")])
+    output.seek(0)
+    return StreamingResponse(io.BytesIO(output.getvalue().encode("utf-8-sig")), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=mudancas_sgmd.csv"})
+
+# Include router
 app.include_router(api_router)
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[os.environ.get("FRONTEND_URL", "http://localhost:3000")],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup():
+    await db.users.create_index("email", unique=True)
+    await seed_admin()
+
+async def seed_admin():
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@sgmd.gov.br")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    existing = await db.users.find_one({"email": admin_email})
+    if existing is None:
+        hashed = hash_password(admin_password)
+        await db.users.insert_one({"email": admin_email, "password_hash": hashed, "name": "Administrador", "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
+        logger.info(f"Admin user seeded: {admin_email}")
+    elif not verify_password(admin_password, existing["password_hash"]):
+        await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
+        logger.info(f"Admin password updated: {admin_email}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
