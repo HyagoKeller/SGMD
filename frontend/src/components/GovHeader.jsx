@@ -9,7 +9,7 @@ export default function GovHeader() {
     <header data-testid="gov-header">
       {/* Top Bar */}
       <div className="bg-[#071D41] text-white py-2 px-6 flex justify-between items-center">
-        <span className="font-extrabold text-lg tracking-wide">gov.br</span>
+        <span className="font-extrabold text-lg tracking-wide">aguservicos.agu.gov.br</span>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4" />

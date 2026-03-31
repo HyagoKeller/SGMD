@@ -30,7 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#f8f8f8] flex flex-col" data-testid="login-page">
       {/* Top Header */}
       <div className="bg-[#071D41] text-white py-2 px-6 flex items-center">
-        <span className="font-extrabold text-lg tracking-wide">gov.br</span>
+        <span className="font-extrabold text-lg tracking-wide">aguservicos.agu.gov.br</span>
       </div>
 
       {/* Sub Header */}
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="bg-[#071D41] text-white text-center py-3 text-xs">
-        SGMD - Servico de Gerenciamento de Mudancas | Governo Federal
+        SGMD - Servico de Gerenciamento de Mudancas | Departamento de Tecnologia da Informacao
       </div>
     </div>
   );
