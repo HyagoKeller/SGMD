@@ -1,0 +1,95 @@
+{
+  "theme": "light",
+  "archetype": "4 (Swiss & High-Contrast) - Gov.br Edition",
+  "typography": {
+    "primary_font": "Raleway, sans-serif",
+    "import_url": "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&display=swap",
+    "headings": "font-bold tracking-tight text-[#333333]",
+    "body": "text-base text-[#333333] leading-relaxed",
+    "notes": "Using Raleway as the closest Google Font equivalent to Gov.br's official 'Rawline' font. Apply this font globally."
+  },
+  "colors": {
+    "primary": "#1351B4",
+    "primary_dark": "#071D41",
+    "background": "#f8f8f8",
+    "surface": "#ffffff",
+    "text_main": "#333333",
+    "text_muted": "#555555",
+    "border": "#E6E6E6",
+    "status": {
+      "planejada": "#155BCB",
+      "aprovada": "#168821",
+      "em_execucao": "#FFCD07",
+      "concluida": "#071D41",
+      "cancelada": "#E52207",
+      "emergencial": "#8A100B"
+    }
+  },
+  "layout": {
+    "strategy": "Dashboard Layout with Top Navigation and Sidebar",
+    "header": {
+      "top_bar": "bg-[#071D41] text-white py-2 px-6 flex justify-between items-center. Must contain text 'gov.br' in extra bold.",
+      "sub_header": "bg-[#1351B4] text-white py-4 px-6 flex justify-between items-center. Must contain title 'Serviço de Gerenciamento de Mudanças - SGMD'."
+    },
+    "sidebar": "w-64 bg-white border-r border-[#E6E6E6] p-6 h-full flex flex-col gap-4",
+    "main_content": "flex-1 bg-[#f8f8f8] p-8 overflow-y-auto",
+    "grid_system": "Use CSS Grid for the Calendar (grid-cols-7) and Metrics (grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6)"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#1351B4] hover:bg-[#071D41] text-white rounded-full px-6 py-2 transition-colors font-semibold shadow-sm",
+      "secondary": "bg-transparent border-2 border-[#1351B4] text-[#1351B4] hover:bg-[#1351B4]/10 rounded-full px-6 py-2 transition-colors font-semibold",
+      "danger": "bg-[#E52207] hover:bg-[#8A100B] text-white rounded-full px-6 py-2 transition-colors font-semibold",
+      "radius": "rounded-full (gov.br standard for action buttons)"
+    },
+    "cards": {
+      "style": "bg-white border border-[#E6E6E6] rounded-md shadow-sm p-4",
+      "hover": "hover:shadow-md transition-shadow"
+    },
+    "calendar": {
+      "wrapper": "bg-white border border-[#E6E6E6] rounded-md overflow-hidden shadow-sm",
+      "cell": "bg-white border-b border-r border-[#E6E6E6] p-2 min-h-[120px] hover:bg-gray-50 transition-colors cursor-pointer",
+      "header_cell": "bg-[#f8f8f8] font-bold text-[#333333] p-3 text-center border-b border-[#E6E6E6]",
+      "event_badge": "text-xs font-semibold px-2 py-1 rounded truncate mb-1 shadow-sm flex items-center gap-1 w-full"
+    },
+    "badges": {
+      "planejada": "bg-[#155BCB] text-white",
+      "aprovada": "bg-[#168821] text-white",
+      "em_execucao": "bg-[#FFCD07] text-[#333333]",
+      "concluida": "bg-[#071D41] text-white",
+      "cancelada": "bg-[#E52207] text-white",
+      "emergencial": "bg-[#8A100B] text-white"
+    },
+    "modals": {
+      "overlay": "bg-black/50 backdrop-blur-sm z-50",
+      "content": "bg-white rounded-md shadow-xl border-t-4 border-[#1351B4] p-6 max-w-2xl w-full relative"
+    },
+    "inputs": {
+      "style": "border border-[#E6E6E6] rounded-md px-4 py-2 focus:ring-2 focus:ring-[#1351B4] focus:border-transparent outline-none w-full"
+    },
+    "icons": "Use lucide-react. STRICT RULE: DO NOT USE EMOJIS."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "logo",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Gov.br_logo.svg/1024px-Gov.br_logo.svg.png",
+        "description": "Official Gov.br Logo for the top dark blue header"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. Strict Colors: Adhere exactly to the provided color palette. Do not invent new shades of blue. Use #1351B4 for primary actions and #071D41 for the top header.",
+    "2. Typography: Import the Raleway font from Google Fonts in your global CSS and apply it to the body. It acts as the stand-in for Rawline.",
+    "3. Layout Structure: Build a layout with a Global Gov Header (#071D41 background, white text/logo), an App Sub-header (#1351B4 background with title 'Serviço de Gerenciamento de Mudanças - SGMD'), a sidebar for filters/legend, and a main content area.",
+    "4. Calendar Implementation: Build a robust monthly grid calendar. Cells should display a list of color-coded pill badges representing scheduled changes. The calendar needs Next/Previous month controls.",
+    "5. Dashboard Elements: Add a top row of Metrics Cards showing total counts for each change status.",
+    "6. Interactive Features: Implement a 'Nova Mudança' (New Change) button that opens a Modal with a form to create a change. Allow clicking a calendar event to view its details (Read/Update/Delete).",
+    "7. Export & Legend: Include Export to CSV/PDF placeholder buttons. Include a Legend section in the sidebar explaining the status colors.",
+    "8. EMOJI BAN: DO NOT under any circumstances use emojis in the code or UI. Use 'lucide-react' icons exclusively (e.g., CheckCircle, AlertTriangle, Calendar, Download).",
+    "9. Authentication: Create a simple, professional Login View using Gov.br styles that the user must pass through before seeing the dashboard.",
+    "10. Accessibility & Contrast: Ensure the 'Em Execução' badge text is dark (#333333) so it is readable against the Warning (#FFCD07) background. All other badges should have white text.",
+    "11. Testing: ALL interactive elements, buttons, inputs, and list items MUST have 'data-testid' attributes (e.g., data-testid='calendar-next-month', data-testid='login-button').",
+    "12. Aesthetic Style: Avoid heavy glassmorphism or overly decorative elements. Keep the UI flat, high-contrast, structural, and strictly professional (Swiss/Brutalist inspired for government)."
+  ]
+}
