@@ -8,6 +8,7 @@ import CalendarGrid from '../components/CalendarGrid';
 import ChangeList from '../components/ChangeList';
 import ChangeModal from '../components/ChangeModal';
 import Legend from '../components/Legend';
+import ConflictAlert from '../components/ConflictAlert';
 import {
   ChevronLeft, ChevronRight, Plus, Download, Calendar as CalendarIcon, List
 } from 'lucide-react';
@@ -243,6 +244,11 @@ export default function DashboardPage() {
         {/* Main Content */}
         <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-y-auto" data-testid="main-content">
           <MetricsCards changes={filteredChanges} />
+
+          {/* Conflict Alert */}
+          <div className="mt-4">
+            <ConflictAlert changes={filteredChanges} />
+          </div>
 
           {/* Calendar Navigation + View Mode */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-3" data-testid="calendar-nav">

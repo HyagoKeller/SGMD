@@ -18,8 +18,7 @@ const TIPO_CONFIG = {
 const RESULTADO_CONFIG = {
   sucesso: { label: 'Executada com sucesso', color: '#168821' },
   sucesso_ressalvas: { label: 'Com ressalvas', color: '#FFCD07', darkText: true },
-  sem_sucesso: { label: 'Sem sucesso', color: '#E52207' },
-  mudanca_cancelada: { label: 'Cancelada', color: '#8A100B' },
+  sem_sucesso: { label: 'Sem sucesso (Rollback)', color: '#E52207' },
 };
 
 function ConcluidaCard({ changes }) {
