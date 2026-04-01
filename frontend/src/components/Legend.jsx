@@ -6,21 +6,21 @@ const TIPO_ICONS = { infraestrutura: Server, sistemas: Monitor, sapiens: BookOpe
 
 export default function Legend() {
   return (
-    <div data-testid="status-legend" className="space-y-5">
+    <div data-testid="status-legend" className="space-y-4">
       <div>
-        <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Status</h3>
-        <div className="space-y-2">
+        <h3 className="text-xs font-bold text-[#333333] mb-2 uppercase tracking-wide">Status</h3>
+        <div className="space-y-1.5">
           {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
             <div key={key} className="flex items-center gap-2" data-testid={`legend-item-${key}`}>
-              <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+              <div className="w-3.5 h-3.5 rounded-sm flex-shrink-0" style={{ backgroundColor: cfg.color }} />
               <span className="text-sm text-[#333333]">{cfg.label}</span>
             </div>
           ))}
         </div>
       </div>
       <div>
-        <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Tipo de Mudança</h3>
-        <div className="space-y-2">
+        <h3 className="text-xs font-bold text-[#333333] mb-2 uppercase tracking-wide">Tipo de Mudança</h3>
+        <div className="space-y-1.5">
           {Object.entries(TIPO_CONFIG).map(([key, cfg]) => {
             const Icon = TIPO_ICONS[key] || Monitor;
             return (

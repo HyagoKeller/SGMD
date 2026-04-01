@@ -1,0 +1,52 @@
+{
+  "summary": "Completed comprehensive testing of SGMD new features: removed emergencial status, added resultado_conclusao field, calendar view modes, and Concluída breakdown functionality. Most features working correctly with one backend validation issue.",
+  "backend_issues": {
+    "critical_bugs": [
+      {
+        "endpoint": "/api/changes",
+        "issue": "Backend accepts 'emergencial' status in POST requests despite frontend removal",
+        "impact": "Allows creation of changes with invalid status that shouldn't exist",
+        "fix_priority": "MEDIUM"
+      }
+    ],
+    "flaky_endpoints": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Login with admin@sgmd.gov.br / admin123 works correctly",
+    "Dashboard loads with all metric cards (NO emergencial card exists - correct)",
+    "Status filter dropdown has NO emergencial option (correct)",
+    "Create change with status 'concluida' and resultado_conclusao field works",
+    "resultado_conclusao field appears when status = concluida",
+    "resultado_conclusao field accepts values: sucesso, sucesso_ressalvas, sem_sucesso, mudanca_cancelada",
+    "Concluída card shows breakdown when clicked with correct counts (sucesso: 2, ressalvas: 0, sem_sucesso: 0, cancelada: 0)",
+    "Concluída card breakdown collapses when clicked again",
+    "Calendar view mode tabs work (Semanal, Mensal, Semestral, Anual)",
+    "Calendar navigation works with different view modes (prev/next/today buttons)",
+    "Calendar displays changes correctly in different view modes",
+    "CSV export button works with success notification",
+    "Edit change functionality works (edit button activates edit mode)",
+    "Delete change functionality available in edit mode",
+    "Create change with tipo_mudanca 'infraestrutura' works",
+    "Backend API accepts and saves resultado_conclusao field correctly",
+    "Backend API updates resultado_conclusao field correctly"
+  ],
+  "test_report_links": [
+    "/app/backend_test.py"
+  ],
+  "action_item_for_main_agent": "Add backend validation to reject 'emergencial' status in ChangeCreate and ChangeUpdate models. Only allow: planejada, aprovada, em_execucao, concluida, cancelada",
+  "updated_files": [
+    "/app/backend_test.py"
+  ],
+  "success_percentage": {
+    "backend": "95%",
+    "frontend": "100%",
+    "integration": "100%"
+  },
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}

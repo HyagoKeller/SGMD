@@ -273,6 +273,93 @@ class SGMDAPITester:
         except Exception as e:
             self.log_test("CSV export exception", False, str(e))
 
+    def test_new_features(self):
+        """Test new features: no emergencial status, resultado_conclusao field"""
+        print("\n🆕 Testing New Features...")
+        
+        if not self.token:
+            print("   ❌ No token available, skipping new features tests")
+            return False
+
+        # Test creating change with 'concluida' status and resultado_conclusao
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        test_change_concluida = {
+            "titulo": "Teste Mudanca Concluida",
+            "descricao": "Mudanca concluida para teste",
+            "data_inicio": today,
+            "status": "concluida",
+            "tipo_mudanca": "infraestrutura",
+            "resultado_conclusao": "sucesso"
+        }
+
+        success, created_change = self.run_test(
+            "Create change with status 'concluida' and resultado_conclusao",
+            "POST",
+            "changes",
+            201,
+            data=test_change_concluida
+        )
+
+        if success and created_change.get('id'):
+            change_id = created_change['id']
+            
+            # Verify the resultado_conclusao field is saved
+            if created_change.get('resultado_conclusao') == 'sucesso':
+                self.log_test("resultado_conclusao field saved correctly", True)
+            else:
+                self.log_test("resultado_conclusao field not saved", False, f"Expected 'sucesso', got {created_change.get('resultado_conclusao')}")
+            
+            # Test updating resultado_conclusao
+            update_data = {"resultado_conclusao": "sucesso_ressalvas"}
+            success, updated_change = self.run_test(
+                "Update resultado_conclusao field",
+                "PUT",
+                f"changes/{change_id}",
+                200,
+                data=update_data
+            )
+            
+            if success and updated_change.get('resultado_conclusao') == 'sucesso_ressalvas':
+                self.log_test("resultado_conclusao field updated correctly", True)
+            else:
+                self.log_test("resultado_conclusao field not updated", False)
+            
+            # Clean up
+            self.run_test(
+                "Delete test change",
+                "DELETE",
+                f"changes/{change_id}",
+                200
+            )
+
+        # Test that 'emergencial' status is rejected (should not exist)
+        test_change_emergencial = {
+            "titulo": "Teste Emergencial",
+            "data_inicio": today,
+            "status": "emergencial"  # This should not be allowed
+        }
+
+        # This should either fail validation or be accepted but converted to a valid status
+        success, response = self.run_test(
+            "Try to create change with 'emergencial' status",
+            "POST",
+            "changes",
+            201,  # We expect it to succeed but not use emergencial
+            data=test_change_emergencial
+        )
+
+        if success:
+            # Check if the status was changed to something valid
+            actual_status = response.get('status')
+            if actual_status != 'emergencial':
+                self.log_test("emergencial status correctly rejected/converted", True, f"Status became: {actual_status}")
+                # Clean up
+                if response.get('id'):
+                    self.run_test("Delete emergencial test change", "DELETE", f"changes/{response['id']}", 200)
+            else:
+                self.log_test("emergencial status incorrectly accepted", False, "emergencial status should not exist")
+
     def test_error_handling(self):
         """Test error handling scenarios"""
         print("\n🚨 Testing Error Handling...")
@@ -318,6 +405,7 @@ class SGMDAPITester:
         
         if auth_success:
             self.test_changes_crud()
+            self.test_new_features()  # Test new features
             self.test_csv_export()
             self.test_error_handling()
         else:

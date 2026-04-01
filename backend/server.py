@@ -102,6 +102,7 @@ class ChangeCreate(BaseModel):
     janela_manutencao: str = ""
     aprovador: str = ""
     servicos_impactados: str = ""
+    resultado_conclusao: str = ""  # sucesso, sucesso_ressalvas, sem_sucesso, cancelada
 
 class ChangeUpdate(BaseModel):
     titulo: Optional[str] = None
@@ -123,6 +124,7 @@ class ChangeUpdate(BaseModel):
     janela_manutencao: Optional[str] = None
     aprovador: Optional[str] = None
     servicos_impactados: Optional[str] = None
+    resultado_conclusao: Optional[str] = None
 
 # --- Auth Routes ---
 @api_router.post("/auth/login")
@@ -211,9 +213,9 @@ async def export_csv(request: Request):
     changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Título", "Descrição", "Tipo Mudança", "Categoria", "Responsável", "Aprovador", "Sistema Afetado", "Serviços Impactados", "Data Início", "Data Fim", "Janela Manutenção", "Status", "Prioridade", "Impacto", "Risco", "Número RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
+    writer.writerow(["Título", "Descrição", "Tipo Mudança", "Categoria", "Responsável", "Aprovador", "Sistema Afetado", "Serviços Impactados", "Data Início", "Data Fim", "Janela Manutenção", "Status", "Resultado Conclusão", "Prioridade", "Impacto", "Risco", "Número RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
     for c in changes:
-        writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("tipo_mudanca",""), c.get("categoria_itil",""), c.get("responsavel",""), c.get("aprovador",""), c.get("sistema_afetado",""), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("janela_manutencao",""), c.get("status",""), c.get("prioridade",""), c.get("impacto",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("created_by",""), c.get("created_at","")])
+        writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("tipo_mudanca",""), c.get("categoria_itil",""), c.get("responsavel",""), c.get("aprovador",""), c.get("sistema_afetado",""), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("janela_manutencao",""), c.get("status",""), c.get("resultado_conclusao",""), c.get("prioridade",""), c.get("impacto",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("created_by",""), c.get("created_at","")])
     output.seek(0)
     return StreamingResponse(io.BytesIO(output.getvalue().encode("utf-8-sig")), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=mudancas_sgmd.csv"})
 
