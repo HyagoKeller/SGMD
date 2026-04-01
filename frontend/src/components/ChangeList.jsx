@@ -9,7 +9,7 @@ export default function ChangeList({ changes, onSelectChange }) {
     return (
       <div className="text-center py-8 text-[#555555]" data-testid="change-list-empty">
         <Clock className="w-10 h-10 mx-auto mb-2 text-[#CCCCCC]" />
-        <p className="text-sm">Nenhuma mudanca neste periodo</p>
+        <p className="text-sm">Nenhuma mudança neste período</p>
       </div>
     );
   }

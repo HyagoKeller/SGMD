@@ -28,7 +28,7 @@ export default function GovHeader() {
       {/* Sub Header */}
       <div className="bg-[#1351B4] text-white py-4 px-6 flex justify-between items-center">
         <h1 className="text-lg md:text-xl font-bold tracking-tight">
-          Servico de Gerenciamento de Mudancas - SGMD
+          Serviço de Gerenciamento de Mudanças - SGMD
         </h1>
       </div>
     </header>

@@ -18,8 +18,8 @@ const STATUS_OPTIONS = [
   { value: 'todos', label: 'Todos' },
   { value: 'planejada', label: 'Planejada' },
   { value: 'aprovada', label: 'Aprovada' },
-  { value: 'em_execucao', label: 'Em Execucao' },
-  { value: 'concluida', label: 'Concluida' },
+  { value: 'em_execucao', label: 'Em Execução' },
+  { value: 'concluida', label: 'Concluída' },
   { value: 'cancelada', label: 'Cancelada' },
   { value: 'emergencial', label: 'Emergencial' },
 ];
@@ -32,7 +32,7 @@ const TIPO_OPTIONS = [
 ];
 
 const MONTH_NAMES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
@@ -55,7 +55,7 @@ export default function DashboardPage() {
       });
       setChanges(res.data);
     } catch (err) {
-      toast.error('Erro ao carregar mudancas');
+      toast.error('Erro ao carregar mudanças');
     } finally {
       setLoading(false);
     }
@@ -104,27 +104,27 @@ export default function DashboardPage() {
     try {
       if (modalMode === 'create') {
         await axios.post(`${API}/changes`, formData, { headers: getHeaders(), withCredentials: true });
-        toast.success('Mudanca criada com sucesso');
+        toast.success('Mudança criada com sucesso');
       } else {
         await axios.put(`${API}/changes/${selectedChange.id}`, formData, { headers: getHeaders(), withCredentials: true });
-        toast.success('Mudanca atualizada com sucesso');
+        toast.success('Mudança atualizada com sucesso');
       }
       closeModal();
       fetchChanges();
     } catch (err) {
-      toast.error('Erro ao salvar mudanca');
+      toast.error('Erro ao salvar mudança');
     }
   };
 
   const handleDelete = async (changeId) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta mudanca?')) return;
+    if (!window.confirm('Tem certeza que deseja excluir esta mudança?')) return;
     try {
       await axios.delete(`${API}/changes/${changeId}`, { headers: getHeaders(), withCredentials: true });
-      toast.success('Mudanca excluida com sucesso');
+      toast.success('Mudança excluída com sucesso');
       closeModal();
       fetchChanges();
     } catch (err) {
-      toast.error('Erro ao excluir mudanca');
+      toast.error('Erro ao excluir mudança');
     }
   };
 
@@ -172,7 +172,7 @@ export default function DashboardPage() {
             className="w-full bg-[#1351B4] hover:bg-[#071D41] text-white rounded-full px-4 py-3 font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm mb-6"
           >
             <Plus className="w-5 h-5" />
-            Nova Mudanca
+            Nova Mudança
           </button>
 
           {/* Status Filter */}
@@ -222,8 +222,8 @@ export default function DashboardPage() {
           <Legend />
 
           {/* View toggle */}
-          <div className="mt-6">
-            <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Visualizacao</h3>
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Visualização</h3>
             <div className="flex gap-2">
               <button
                 data-testid="view-calendar-button"
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                 Hoje
               </button>
               <span className="text-sm text-[#555555] font-medium" data-testid="changes-count">
-                {filteredChanges.length} mudanca{filteredChanges.length !== 1 ? 's' : ''}
+                {filteredChanges.length} mudança{filteredChanges.length !== 1 ? 's' : ''}
               </span>
             </div>
           </div>

@@ -4,8 +4,8 @@ import { Calendar, CheckCircle, Clock, AlertTriangle, XCircle, Zap, Server, Moni
 const STATUS_CONFIG = {
   planejada: { label: 'Planejada', color: '#155BCB', icon: Calendar },
   aprovada: { label: 'Aprovada', color: '#168821', icon: CheckCircle },
-  em_execucao: { label: 'Em Execucao', color: '#FFCD07', icon: Clock, darkText: true },
-  concluida: { label: 'Concluida', color: '#071D41', icon: CheckCircle },
+  em_execucao: { label: 'Em Execução', color: '#FFCD07', icon: Clock, darkText: true },
+  concluida: { label: 'Concluída', color: '#071D41', icon: CheckCircle },
   cancelada: { label: 'Cancelada', color: '#E52207', icon: XCircle },
   emergencial: { label: 'Emergencial', color: '#8A100B', icon: AlertTriangle },
 };

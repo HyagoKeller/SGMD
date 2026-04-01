@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Edit3, FileText, Server, Monitor, BookOpen } from 'lucide-react';
+import { X, Save, Trash2, Edit3, Server, Monitor, BookOpen } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { STATUS_CONFIG } from './MetricsCards';
 
 const IMPACTO_OPTIONS = [
   { value: 'baixo', label: 'Baixo' },
-  { value: 'medio', label: 'Medio' },
+  { value: 'medio', label: 'Médio' },
   { value: 'alto', label: 'Alto' },
-  { value: 'critico', label: 'Critico' },
+  { value: 'critico', label: 'Crítico' },
 ];
 
 const TIPO_MUDANCA_OPTIONS = [
@@ -18,20 +18,20 @@ const TIPO_MUDANCA_OPTIONS = [
 
 const CATEGORIA_ITIL_OPTIONS = [
   { value: 'normal', label: 'Normal' },
-  { value: 'padrao', label: 'Padrao' },
+  { value: 'padrao', label: 'Padrão' },
   { value: 'emergencial', label: 'Emergencial' },
 ];
 
 const PRIORIDADE_OPTIONS = [
-  { value: 'critica', label: 'Critica' },
+  { value: 'critica', label: 'Crítica' },
   { value: 'alta', label: 'Alta' },
-  { value: 'media', label: 'Media' },
+  { value: 'media', label: 'Média' },
   { value: 'baixa', label: 'Baixa' },
 ];
 
 const RISCO_OPTIONS = [
   { value: 'alto', label: 'Alto' },
-  { value: 'medio', label: 'Medio' },
+  { value: 'medio', label: 'Médio' },
   { value: 'baixo', label: 'Baixo' },
 ];
 
@@ -100,7 +100,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
             </div>
             <div>
               <h2 className="text-lg font-bold text-[#333333]">
-                {mode === 'create' ? 'Nova Mudanca' : editing ? 'Editar Mudanca' : 'Detalhes da Mudanca'}
+                {mode === 'create' ? 'Nova Mudança' : editing ? 'Editar Mudança' : 'Detalhes da Mudança'}
               </h2>
               {form.numero_rfc && (
                 <span className="text-xs text-[#555555]">RFC: {form.numero_rfc}</span>
@@ -127,13 +127,13 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-          {/* === SECAO 1: Identificacao === */}
+          {/* === SEÇÃO 1: Identificação === */}
           <div>
-            <h3 className={sectionTitle}>Identificacao da Mudanca</h3>
+            <h3 className={sectionTitle}>Identificação da Mudança</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#333333] mb-1">Numero RFC</label>
+                  <label className="block text-sm font-semibold text-[#333333] mb-1">Número RFC</label>
                   <Input
                     data-testid="change-rfc-input"
                     value={form.numero_rfc}
@@ -144,7 +144,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#333333] mb-1">Tipo de Mudanca *</label>
+                  <label className="block text-sm font-semibold text-[#333333] mb-1">Tipo de Mudança *</label>
                   <select
                     data-testid="change-tipo-select"
                     value={form.tipo_mudanca}
@@ -160,7 +160,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-1">Titulo *</label>
+                <label className="block text-sm font-semibold text-[#333333] mb-1">Título *</label>
                 <Input
                   data-testid="change-titulo-input"
                   value={form.titulo}
@@ -168,12 +168,12 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   disabled={isReadonly}
                   required
                   className="border-[#E6E6E6]"
-                  placeholder="Titulo da mudanca"
+                  placeholder="Título da mudança"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-1">Descricao</label>
+                <label className="block text-sm font-semibold text-[#333333] mb-1">Descrição</label>
                 <textarea
                   data-testid="change-descricao-input"
                   value={form.descricao}
@@ -181,7 +181,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   disabled={isReadonly}
                   rows={3}
                   className={textareaClass}
-                  placeholder="Descreva a mudanca detalhadamente"
+                  placeholder="Descreva a mudança detalhadamente"
                 />
               </div>
 
@@ -194,18 +194,18 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   disabled={isReadonly}
                   rows={2}
                   className={textareaClass}
-                  placeholder="Motivo e necessidade da mudanca"
+                  placeholder="Motivo e necessidade da mudança"
                 />
               </div>
             </div>
           </div>
 
-          {/* === SECAO 2: Classificacao ITIL === */}
+          {/* === SEÇÃO 2: Classificação === */}
           <div>
-            <h3 className={sectionTitle}>Classificacao ITIL</h3>
+            <h3 className={sectionTitle}>Classificação</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-1">Categoria ITIL</label>
+                <label className="block text-sm font-semibold text-[#333333] mb-1">Categoria</label>
                 <select
                   data-testid="change-categoria-select"
                   value={form.categoria_itil}
@@ -277,13 +277,13 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
             </div>
           </div>
 
-          {/* === SECAO 3: Planejamento === */}
+          {/* === SEÇÃO 3: Planejamento === */}
           <div>
-            <h3 className={sectionTitle}>Planejamento e Execucao</h3>
+            <h3 className={sectionTitle}>Planejamento e Execução</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#333333] mb-1">Data Inicio *</label>
+                  <label className="block text-sm font-semibold text-[#333333] mb-1">Data Início *</label>
                   <Input
                     data-testid="change-data-inicio-input"
                     type="date"
@@ -308,14 +308,14 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-1">Janela de Manutencao</label>
+                <label className="block text-sm font-semibold text-[#333333] mb-1">Janela de Manutenção</label>
                 <Input
                   data-testid="change-janela-input"
                   value={form.janela_manutencao}
                   onChange={(e) => handleChange('janela_manutencao', e.target.value)}
                   disabled={isReadonly}
                   className="border-[#E6E6E6]"
-                  placeholder="Ex: Sabado 22h - Domingo 06h"
+                  placeholder="Ex: Sábado 22h - Domingo 06h"
                 />
               </div>
 
@@ -328,26 +328,26 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   disabled={isReadonly}
                   rows={2}
                   className={textareaClass}
-                  placeholder="Descreva o plano de reversao caso a mudanca falhe"
+                  placeholder="Descreva o plano de reversão caso a mudança falhe"
                 />
               </div>
             </div>
           </div>
 
-          {/* === SECAO 4: Responsaveis e Impacto === */}
+          {/* === SEÇÃO 4: Responsáveis e Impacto === */}
           <div>
-            <h3 className={sectionTitle}>Responsaveis e Impacto</h3>
+            <h3 className={sectionTitle}>Responsáveis e Impacto</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#333333] mb-1">Responsavel</label>
+                  <label className="block text-sm font-semibold text-[#333333] mb-1">Responsável</label>
                   <Input
                     data-testid="change-responsavel-input"
                     value={form.responsavel}
                     onChange={(e) => handleChange('responsavel', e.target.value)}
                     disabled={isReadonly}
                     className="border-[#E6E6E6]"
-                    placeholder="Nome do responsavel tecnico"
+                    placeholder="Nome do responsável técnico"
                   />
                 </div>
                 <div>
@@ -376,14 +376,14 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#333333] mb-1">Servicos Impactados</label>
+                  <label className="block text-sm font-semibold text-[#333333] mb-1">Serviços Impactados</label>
                   <Input
                     data-testid="change-servicos-input"
                     value={form.servicos_impactados}
                     onChange={(e) => handleChange('servicos_impactados', e.target.value)}
                     disabled={isReadonly}
                     className="border-[#E6E6E6]"
-                    placeholder="Ex: Email, VPN, Rede interna"
+                    placeholder="Ex: E-mail, VPN, Rede interna"
                   />
                 </div>
               </div>
@@ -393,7 +393,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
           {/* View mode info */}
           {isReadonly && change && (
             <div className="bg-[#f8f8f8] rounded-md p-4 text-xs text-[#555555] space-y-2 border border-[#E6E6E6]">
-              <h4 className="font-bold text-[#333333] text-sm mb-2">Informacoes do Registro</h4>
+              <h4 className="font-bold text-[#333333] text-sm mb-2">Informações do Registro</h4>
               <div className="grid grid-cols-2 gap-2">
                 {change.created_by && <p>Criado por: <span className="font-semibold text-[#333333]">{change.created_by}</span></p>}
                 {change.created_at && <p>Criado em: <span className="font-semibold text-[#333333]">{new Date(change.created_at).toLocaleString('pt-BR')}</span></p>}

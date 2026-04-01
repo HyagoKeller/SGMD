@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       {/* Sub Header */}
       <div className="bg-[#1351B4] text-white py-4 px-6">
-        <h1 className="text-lg font-semibold">Servico de Gerenciamento de Mudancas - SGMD</h1>
+        <h1 className="text-lg font-semibold">Serviço de Gerenciamento de Mudanças - SGMD</h1>
       </div>
 
       {/* Login Form */}
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="bg-[#071D41] text-white text-center py-3 text-xs">
-        SGMD - Servico de Gerenciamento de Mudancas | Departamento de Tecnologia da Informacao
+        SGMD - Serviço de Gerenciamento de Mudanças | Departamento de Tecnologia da Informação
       </div>
     </div>
   );

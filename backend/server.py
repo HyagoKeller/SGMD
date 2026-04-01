@@ -55,21 +55,21 @@ async def get_current_user(request: Request) -> dict:
         if auth_header.startswith("Bearer "):
             token = auth_header[7:]
     if not token:
-        raise HTTPException(status_code=401, detail="Nao autenticado")
+        raise HTTPException(status_code=401, detail="Não autenticado")
     try:
         payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
         if payload.get("type") != "access":
-            raise HTTPException(status_code=401, detail="Token invalido")
+            raise HTTPException(status_code=401, detail="Token inválido")
         user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
         if not user:
-            raise HTTPException(status_code=401, detail="Usuario nao encontrado")
+            raise HTTPException(status_code=401, detail="Usuário não encontrado")
         user["_id"] = str(user["_id"])
         user.pop("password_hash", None)
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expirado")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Token invalido")
+        raise HTTPException(status_code=401, detail="Token inválido")
 
 # --- Auth Models ---
 class LoginRequest(BaseModel):
@@ -130,9 +130,9 @@ async def login(req: LoginRequest, response: Response):
     email = req.email.strip().lower()
     user = await db.users.find_one({"email": email})
     if not user:
-        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
+        raise HTTPException(status_code=401, detail="E-mail ou senha incorretos")
     if not verify_password(req.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
+        raise HTTPException(status_code=401, detail="E-mail ou senha incorretos")
     user_id = str(user["_id"])
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
@@ -145,7 +145,7 @@ async def register(req: RegisterRequest, response: Response):
     email = req.email.strip().lower()
     existing = await db.users.find_one({"email": email})
     if existing:
-        raise HTTPException(status_code=400, detail="Email ja cadastrado")
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
     hashed = hash_password(req.password)
     user_doc = {"email": email, "password_hash": hashed, "name": req.name, "role": "user", "created_at": datetime.now(timezone.utc).isoformat()}
     result = await db.users.insert_one(user_doc)
@@ -193,7 +193,7 @@ async def update_change(change_id: str, change: ChangeUpdate, request: Request):
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     result = await db.changes.update_one({"id": change_id}, {"$set": update_data})
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Mudanca nao encontrada")
+        raise HTTPException(status_code=404, detail="Mudança não encontrada")
     updated = await db.changes.find_one({"id": change_id}, {"_id": 0})
     return updated
 
@@ -202,8 +202,8 @@ async def delete_change(change_id: str, request: Request):
     await get_current_user(request)
     result = await db.changes.delete_one({"id": change_id})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Mudanca nao encontrada")
-    return {"message": "Mudanca excluida"}
+        raise HTTPException(status_code=404, detail="Mudança não encontrada")
+    return {"message": "Mudança excluída"}
 
 @api_router.get("/changes/export/csv")
 async def export_csv(request: Request):
@@ -211,7 +211,7 @@ async def export_csv(request: Request):
     changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Titulo", "Descricao", "Tipo Mudanca", "Categoria ITIL", "Responsavel", "Aprovador", "Sistema Afetado", "Servicos Impactados", "Data Inicio", "Data Fim", "Janela Manutencao", "Status", "Prioridade", "Impacto", "Risco", "Numero RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
+    writer.writerow(["Título", "Descrição", "Tipo Mudança", "Categoria", "Responsável", "Aprovador", "Sistema Afetado", "Serviços Impactados", "Data Início", "Data Fim", "Janela Manutenção", "Status", "Prioridade", "Impacto", "Risco", "Número RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
     for c in changes:
         writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("tipo_mudanca",""), c.get("categoria_itil",""), c.get("responsavel",""), c.get("aprovador",""), c.get("sistema_afetado",""), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("janela_manutencao",""), c.get("status",""), c.get("prioridade",""), c.get("impacto",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("created_by",""), c.get("created_at","")])
     output.seek(0)

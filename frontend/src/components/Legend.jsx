@@ -19,7 +19,7 @@ export default function Legend() {
         </div>
       </div>
       <div>
-        <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Tipo de Mudanca</h3>
+        <h3 className="text-sm font-bold text-[#333333] mb-3 uppercase tracking-wide">Tipo de Mudança</h3>
         <div className="space-y-2">
           {Object.entries(TIPO_CONFIG).map(([key, cfg]) => {
             const Icon = TIPO_ICONS[key] || Monitor;
