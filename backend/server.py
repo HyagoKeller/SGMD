@@ -16,8 +16,8 @@ import jwt
 import csv
 import io
 from datetime import datetime, timezone, timedelta
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Literal
 from fastapi.responses import StreamingResponse
 
 # MongoDB connection
@@ -81,6 +81,8 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
 
+VALID_STATUSES = ["planejada", "aprovada", "em_execucao", "concluida", "cancelada"]
+
 # --- Change Models (ITIL v4) ---
 class ChangeCreate(BaseModel):
     titulo: str
@@ -91,18 +93,24 @@ class ChangeCreate(BaseModel):
     data_fim: str = ""
     status: str = "planejada"
     impacto: str = "medio"
-    # ITIL fields
-    tipo_mudanca: str = "sistemas"  # infraestrutura, sistemas, sapiens
-    categoria_itil: str = "normal"  # normal, padrao, emergencial
-    prioridade: str = "media"  # critica, alta, media, baixa
-    risco: str = "medio"  # alto, medio, baixo
+    tipo_mudanca: str = "sistemas"
+    categoria_itil: str = "normal"
+    prioridade: str = "media"
+    risco: str = "medio"
     numero_rfc: str = ""
     justificativa: str = ""
     plano_rollback: str = ""
     janela_manutencao: str = ""
     aprovador: str = ""
     servicos_impactados: str = ""
-    resultado_conclusao: str = ""  # sucesso, sucesso_ressalvas, sem_sucesso, cancelada
+    resultado_conclusao: str = ""
+
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v):
+        if v not in VALID_STATUSES:
+            raise ValueError(f'Status inválido. Valores aceitos: {", ".join(VALID_STATUSES)}')
+        return v
 
 class ChangeUpdate(BaseModel):
     titulo: Optional[str] = None
@@ -125,6 +133,13 @@ class ChangeUpdate(BaseModel):
     aprovador: Optional[str] = None
     servicos_impactados: Optional[str] = None
     resultado_conclusao: Optional[str] = None
+
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v):
+        if v is not None and v not in VALID_STATUSES:
+            raise ValueError(f'Status inválido. Valores aceitos: {", ".join(VALID_STATUSES)}')
+        return v
 
 # --- Auth Routes ---
 @api_router.post("/auth/login")
