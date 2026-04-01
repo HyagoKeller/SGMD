@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TIPO_CONFIG } from './MetricsCards';
-import { CheckCircle, AlertTriangle, Server, Monitor, BookOpen } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Server, Monitor, BookOpen, Eye, EyeOff } from 'lucide-react';
 
 const TIPO_ICONS = { infraestrutura: Server, sistemas: Monitor, sapiens: BookOpen };
 
 export default function ConflictAlert({ changes }) {
+  const [hidden, setHidden] = useState(false);
   const conflicts = useMemo(() => {
     if (!changes || changes.length < 2) return [];
 
@@ -67,11 +68,34 @@ export default function ConflictAlert({ changes }) {
 
   if (conflicts.length === 0) {
     return (
-      <div className="bg-[#E8F5E9] border border-[#168821]/30 rounded-md px-4 py-3 flex items-center gap-3" data-testid="conflict-alert-none">
-        <CheckCircle className="w-5 h-5 text-[#168821] flex-shrink-0" />
-        <p className="text-sm font-medium text-[#168821]">
-          Nenhum conflito de agendamento identificado no período.
-        </p>
+      <div className="bg-[#E8F5E9] border border-[#168821]/30 rounded-md px-4 py-3 flex items-center justify-between" data-testid="conflict-alert-none">
+        <div className="flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-[#168821] flex-shrink-0" />
+          <p className="text-sm font-medium text-[#168821]">
+            Nenhum conflito de agendamento identificado no período.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hidden) {
+    return (
+      <div className="bg-[#FFF3CD] border border-[#FFCD07] rounded-md px-4 py-2.5 flex items-center justify-between" data-testid="conflict-alert-hidden">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-[#8A6D00] flex-shrink-0" />
+          <p className="text-sm font-semibold text-[#8A6D00]">
+            {conflicts.length} conflito{conflicts.length !== 1 ? 's' : ''} oculto{conflicts.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          data-testid="conflict-show-button"
+          onClick={() => setHidden(false)}
+          className="flex items-center gap-1 text-xs font-semibold text-[#8A6D00] hover:text-[#333333] transition-colors"
+        >
+          <Eye className="w-4 h-4" />
+          Exibir
+        </button>
       </div>
     );
   }
@@ -88,11 +112,21 @@ export default function ConflictAlert({ changes }) {
 
   return (
     <div className="bg-[#FFF3CD] border border-[#FFCD07] rounded-md px-4 py-3 space-y-3" data-testid="conflict-alert">
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="w-5 h-5 text-[#8A6D00] flex-shrink-0" />
-        <p className="text-sm font-bold text-[#8A6D00]">
-          {conflicts.length} conflito{conflicts.length !== 1 ? 's' : ''} de agendamento identificado{conflicts.length !== 1 ? 's' : ''}
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-[#8A6D00] flex-shrink-0" />
+          <p className="text-sm font-bold text-[#8A6D00]">
+            {conflicts.length} conflito{conflicts.length !== 1 ? 's' : ''} de agendamento identificado{conflicts.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          data-testid="conflict-hide-button"
+          onClick={() => setHidden(true)}
+          className="flex items-center gap-1 text-xs font-semibold text-[#8A6D00] hover:text-[#333333] transition-colors"
+        >
+          <EyeOff className="w-4 h-4" />
+          Ocultar
+        </button>
       </div>
 
       <div className="space-y-2">
