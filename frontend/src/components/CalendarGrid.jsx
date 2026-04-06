@@ -23,16 +23,21 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
   const formatDateStr = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
   const renderEventBadge = (change) => {
-    const cfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
+    const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
+    const tipoCfg = TIPO_CONFIG[change.tipo_mudanca] || TIPO_CONFIG.sistemas;
     const TIcon = TIPO_ICONS[change.tipo_mudanca] || Monitor;
     return (
       <button
         key={change.id}
         data-testid={`calendar-event-${change.id}`}
         onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
-        className="text-xs font-semibold px-1.5 py-0.5 rounded truncate w-full text-left flex items-center gap-1 shadow-sm hover:opacity-90 transition-opacity"
-        style={{ backgroundColor: cfg.color, color: cfg.darkText ? '#333333' : '#ffffff' }}
-        title={`${change.titulo} (${(TIPO_CONFIG[change.tipo_mudanca] || TIPO_CONFIG.sistemas).label})`}
+        className="text-xs font-semibold px-1.5 py-0.5 rounded truncate w-full text-left flex items-center gap-1 shadow-sm hover:opacity-90 transition-opacity border-l-[3px]"
+        style={{
+          backgroundColor: tipoCfg.color,
+          color: '#ffffff',
+          borderLeftColor: statusCfg.color
+        }}
+        title={`${change.titulo} | ${tipoCfg.label} | ${statusCfg.label}`}
       >
         <TIcon className="w-3 h-3 flex-shrink-0" />
         <span className="truncate">{change.titulo}</span>
