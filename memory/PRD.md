@@ -1,42 +1,58 @@
-# SGMD - Servico de Gerenciamento de Mudancas
+# SGMD - Serviço de Gerenciamento de Mudanças
 
-## Problem Statement
-Sistema web de calendario de mudancas agendadas seguindo o Design System Gov.br (Governo Federal do Brasil), com campos ITIL v4 para gestao profissional de mudancas.
+## Problema Original
+Criar um frontend de calendário web para mudanças programadas (SGMD) usando o design system Gov.br do Governo Brasileiro. O app requer MongoDB CRUD completo, Autenticação JWT e exportação CSV. Rastreia workflows ITIL para mudanças (Natureza, Categoria, Risco, Frente de Atuação/Sistemas, Datas, etc.).
 
-## Architecture
-- **Frontend**: React + Tailwind CSS + Shadcn UI (porta 3000)
-- **Backend**: FastAPI + MongoDB (porta 8001)
-- **Auth**: JWT com bcrypt
-- **Design System**: Gov.br (cores #1351B4, #071D41, #168821, #E52207, #FFCD07)
+## Personas
+- **Administrador**: Gerencia mudanças, visualiza calendário, exporta relatórios
+- **Operador**: Registra e acompanha mudanças ITIL
 
-## User Personas
-- Gestor de TI (cadastra e aprova mudancas)
-- Equipe tecnica (visualiza calendario, executa mudancas)
-- Administrador (gerencia usuarios e mudancas)
+## Requisitos Core
+- Autenticação JWT com bcrypt
+- CRUD completo de mudanças com campos ITIL v4
+- Calendário com visualizações: Semanal, Mensal, Semestral, Anual
+- Exportação CSV
+- Alertas de conflito de agendamento
+- Design system Gov.br
 
-## Core Requirements
-- Calendario mensal visual de mudancas
-- CRUD completo de mudancas com campos ITIL
-- Tipos: Infraestrutura, Sistemas, SAPIENS
-- Classificacao ITIL: Categoria, Prioridade, Risco, Impacto
-- Campos ITIL: RFC, Justificativa, Plano de Rollback, Janela de Manutencao, Aprovador
-- Filtros por status e tipo
-- Exportacao CSV
-- Autenticacao JWT
+## Arquitetura
+- **Frontend**: React.js + Tailwind CSS + Shadcn UI + Lucide React
+- **Backend**: FastAPI + Python + PyJWT + Motor (MongoDB async)
+- **Database**: MongoDB
 
-## What's Been Implemented (2026-03-31)
-- Login page Gov.br styled
-- Dashboard com header Gov.br, metricas, calendario, sidebar
-- CRUD completo de mudancas com 10+ campos ITIL
-- Filtros por status (6 opcoes) e tipo (3 opcoes)
-- Visualizacao calendario e lista
-- Exportacao CSV
-- Auth JWT com admin seed
+## Schema DB
+- `users`: `{email, password_hash, name, role, created_at}`
+- `changes`: `{id, titulo, descricao, frente_atuacao, natureza_mudanca, categoria_mudanca, risco, data_inicio, data_fim, status, responsavel_negocio, sistemas_afetados, numero_rfc, justificativa, plano_rollback, servicos_impactados, resultado_conclusao, ambiente_homologado, versao_sistema, created_by, created_at, updated_at}`
 
-## Backlog
-- P1: Importacao de dados via CSV/planilha
-- P1: Dashboard de relatorios/graficos
-- P2: Notificacoes por email
-- P2: Historico de alteracoes (audit trail)
-- P2: Perfis de usuario (operador, gestor, admin)
-- P3: Integracao com ferramentas ITSM
+## Implementado
+- [x] Backend FastAPI com JWT Auth + bcrypt
+- [x] MongoDB com collections users e changes
+- [x] CRUD endpoints + Export CSV
+- [x] Frontend Dashboard com estilo Gov.br
+- [x] Campos ITIL customizados (Natureza, Categoria, Rollback, Homologado)
+- [x] Alertas de conflito de agendamento
+- [x] Métricas Cards com breakdown de concluídas
+- [x] Calendário com 4 modos de visualização
+- [x] Tags de Natureza/Categoria FIXAS no calendário (sem tooltip)
+- [x] Ícone de Risco Alto (AlertTriangle) visível no calendário
+- [x] Logo SuperSapiens com fundo escuro para contraste
+- [x] "Mudança Emergencial" renomeado corretamente
+- [x] Filtro de datas corrigido para datetime-local
+- [x] HLD documento de arquitetura
+
+## Backlog (P1/P2)
+- [ ] **P1**: Integração ITSM Invagate (aguardando API keys do usuário)
+- [ ] **P2**: Dashboard analytics avançado
+- [ ] **P2**: Notificações de mudanças próximas
+- [ ] **P2**: Permissões granulares por papel
+
+## API Endpoints
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
+- `GET /api/changes`
+- `POST /api/changes`
+- `PUT /api/changes/{id}`
+- `DELETE /api/changes/{id}`
+- `GET /api/changes/export/csv`
