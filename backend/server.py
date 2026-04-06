@@ -82,63 +82,68 @@ class RegisterRequest(BaseModel):
     name: str
 
 VALID_STATUSES = ["planejada", "aprovada", "em_execucao", "concluida", "cancelada"]
+VALID_CATEGORIAS = ["novo_servico", "preventiva", "adaptativa", "corretiva", "evolutiva", "desativacao", "deploy", "teste_vulnerabilidade"]
 
 # --- Change Models (ITIL v4) ---
 class ChangeCreate(BaseModel):
     titulo: str
     descricao: str = ""
-    responsavel: str = ""
-    sistema_afetado: str = ""
+    responsavel_negocio: str = ""
+    sistemas_afetados: str = ""
     data_inicio: str
     data_fim: str = ""
     status: str = "planejada"
-    impacto: str = "medio"
-    tipo_mudanca: str = "sistemas"
-    categoria_itil: str = "normal"
-    prioridade: str = "media"
+    frente_atuacao: str = "sistemas"  # infraestrutura, sistemas, supersapiens
+    natureza_mudanca: str = "planejada_normal"  # planejada_normal, baixo_risco, emergencial
+    categoria_mudanca: str  # required
     risco: str = "medio"
     numero_rfc: str = ""
     justificativa: str = ""
-    plano_rollback: str = ""
-    janela_manutencao: str = ""
-    aprovador: str = ""
+    plano_rollback: str
     servicos_impactados: str = ""
     resultado_conclusao: str = ""
+    ambiente_homologado: str = "nao_se_aplica"  # sim, nao, nao_se_aplica
+    versao_sistema: str = ""
 
     @field_validator('status')
     @classmethod
     def validate_status(cls, v):
         if v not in VALID_STATUSES:
-            raise ValueError(f'Status inválido. Valores aceitos: {", ".join(VALID_STATUSES)}')
+            raise ValueError(f'Status invalido. Valores aceitos: {", ".join(VALID_STATUSES)}')
+        return v
+
+    @field_validator('categoria_mudanca')
+    @classmethod
+    def validate_categoria(cls, v):
+        if v not in VALID_CATEGORIAS:
+            raise ValueError(f'Categoria invalida. Valores aceitos: {", ".join(VALID_CATEGORIAS)}')
         return v
 
 class ChangeUpdate(BaseModel):
     titulo: Optional[str] = None
     descricao: Optional[str] = None
-    responsavel: Optional[str] = None
-    sistema_afetado: Optional[str] = None
+    responsavel_negocio: Optional[str] = None
+    sistemas_afetados: Optional[str] = None
     data_inicio: Optional[str] = None
     data_fim: Optional[str] = None
     status: Optional[str] = None
-    impacto: Optional[str] = None
-    # ITIL fields
-    tipo_mudanca: Optional[str] = None
-    categoria_itil: Optional[str] = None
-    prioridade: Optional[str] = None
+    frente_atuacao: Optional[str] = None
+    natureza_mudanca: Optional[str] = None
+    categoria_mudanca: Optional[str] = None
     risco: Optional[str] = None
     numero_rfc: Optional[str] = None
     justificativa: Optional[str] = None
     plano_rollback: Optional[str] = None
-    janela_manutencao: Optional[str] = None
-    aprovador: Optional[str] = None
     servicos_impactados: Optional[str] = None
     resultado_conclusao: Optional[str] = None
+    ambiente_homologado: Optional[str] = None
+    versao_sistema: Optional[str] = None
 
     @field_validator('status')
     @classmethod
     def validate_status(cls, v):
         if v is not None and v not in VALID_STATUSES:
-            raise ValueError(f'Status inválido. Valores aceitos: {", ".join(VALID_STATUSES)}')
+            raise ValueError(f'Status invalido. Valores aceitos: {", ".join(VALID_STATUSES)}')
         return v
 
 # --- Auth Routes ---
@@ -228,9 +233,9 @@ async def export_csv(request: Request):
     changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Título", "Descrição", "Tipo Mudança", "Categoria", "Responsável", "Aprovador", "Sistema Afetado", "Serviços Impactados", "Data Início", "Data Fim", "Janela Manutenção", "Status", "Resultado Conclusão", "Prioridade", "Impacto", "Risco", "Número RFC", "Justificativa", "Plano Rollback", "Criado por", "Criado em"])
+    writer.writerow(["Título", "Descrição", "Frente de Atuação", "Natureza da Mudança", "Categoria da Mudança", "Responsável do Negócio", "Sistemas Afetados", "Serviços Impactados", "Data/Hora Início", "Data/Hora Fim", "Status", "Resultado Conclusão", "Risco", "Número RFC", "Justificativa", "Plano Rollback", "Ambiente Homologado", "Versão Sistema", "Criado por", "Criado em"])
     for c in changes:
-        writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("tipo_mudanca",""), c.get("categoria_itil",""), c.get("responsavel",""), c.get("aprovador",""), c.get("sistema_afetado",""), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("janela_manutencao",""), c.get("status",""), c.get("resultado_conclusao",""), c.get("prioridade",""), c.get("impacto",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("created_by",""), c.get("created_at","")])
+        writer.writerow([c.get("titulo",""), c.get("descricao",""), c.get("frente_atuacao",c.get("tipo_mudanca","")), c.get("natureza_mudanca",c.get("categoria_itil","")), c.get("categoria_mudanca",""), c.get("responsavel_negocio",c.get("responsavel","")), c.get("sistemas_afetados",c.get("sistema_afetado","")), c.get("servicos_impactados",""), c.get("data_inicio",""), c.get("data_fim",""), c.get("status",""), c.get("resultado_conclusao",""), c.get("risco",""), c.get("numero_rfc",""), c.get("justificativa",""), c.get("plano_rollback",""), c.get("ambiente_homologado",""), c.get("versao_sistema",""), c.get("created_by",""), c.get("created_at","")])
     output.seek(0)
     return StreamingResponse(io.BytesIO(output.getvalue().encode("utf-8-sig")), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=mudancas_sgmd.csv"})
 

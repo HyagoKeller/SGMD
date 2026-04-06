@@ -24,11 +24,11 @@ const STATUS_OPTIONS = [
   { value: 'cancelada', label: 'Cancelada' },
 ];
 
-const TIPO_OPTIONS = [
-  { value: 'todos', label: 'Todos os Tipos' },
+const FRENTE_OPTIONS = [
+  { value: 'todos', label: 'Todas as Frentes' },
   { value: 'infraestrutura', label: 'Infraestrutura' },
   { value: 'sistemas', label: 'Sistemas' },
-  { value: 'sapiens', label: 'SAPIENS' },
+  { value: 'supersapiens', label: 'SuperSapiens' },
 ];
 
 const VIEW_MODE_OPTIONS = [
@@ -95,7 +95,11 @@ export default function DashboardPage() {
       }
 
       const matchStatus = statusFilter === 'todos' || c.status === statusFilter;
-      const matchTipo = tipoFilter === 'todos' || (c.tipo_mudanca || 'sistemas') === tipoFilter;
+      const matchTipo = tipoFilter === 'todos' || (() => {
+        const f = c.frente_atuacao || c.tipo_mudanca || 'sistemas';
+        const fk = f === 'sapiens' ? 'supersapiens' : f;
+        return fk === tipoFilter;
+      })();
       return matchDate && matchStatus && matchTipo;
     });
   }, [changes, currentDate, statusFilter, tipoFilter, calendarMode]);
@@ -213,9 +217,9 @@ export default function DashboardPage() {
           </div>
 
           <div className="mb-5">
-            <h3 className="text-xs font-bold text-[#333333] mb-2 uppercase tracking-wide">Filtrar por Tipo</h3>
+            <h3 className="text-xs font-bold text-[#333333] mb-2 uppercase tracking-wide">Frente de Atuação</h3>
             <select data-testid="tipo-filter-select" value={tipoFilter} onChange={(e) => setTipoFilter(e.target.value)} className="w-full border border-[#E6E6E6] rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#1351B4] focus:border-transparent outline-none bg-white">
-              {TIPO_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {FRENTE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
 
