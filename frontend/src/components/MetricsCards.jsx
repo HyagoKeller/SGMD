@@ -10,9 +10,9 @@ const STATUS_CONFIG = {
 };
 
 const TIPO_CONFIG = {
-  infraestrutura: { label: 'Infraestrutura', color: '#0C326F', icon: Server },
+  infraestrutura: { label: 'Infraestrutura', color: '#1B5E20', icon: Server },
   sistemas: { label: 'Sistemas', color: '#1351B4', icon: Monitor },
-  sapiens: { label: 'SAPIENS', color: '#C5992A', icon: BookOpen },
+  sapiens: { label: 'SAPIENS', color: '#D4500E', icon: BookOpen },
 };
 
 const RESULTADO_CONFIG = {
