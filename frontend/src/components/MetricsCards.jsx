@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle, Clock, XCircle, HardDrive, Monitor, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import SuperSapiensIcon from './SuperSapiensIcon';
 
 const STATUS_CONFIG = {
   planejada: { label: 'Planejada', color: '#155BCB', icon: Calendar },
@@ -11,8 +12,8 @@ const STATUS_CONFIG = {
 
 const FRENTE_CONFIG = {
   infraestrutura: { label: 'Infraestrutura', color: '#1B5E20', icon: HardDrive },
-  sistemas: { label: 'Sistemas', color: '#1351B4', icon: Monitor },
-  supersapiens: { label: 'SuperSapiens', color: '#D4500E', icon: Zap },
+  sistemas: { label: 'Sistemas', color: '#D4500E', icon: Monitor },
+  supersapiens: { label: 'SuperSapiens', color: '#1351B4', icon: Zap, hasLogo: true },
 };
 
 const RESULTADO_CONFIG = {
@@ -123,7 +124,7 @@ export default function MetricsCards({ changes }) {
           return (
             <div key={key} data-testid={`metric-frente-${key}`} className="bg-white border-l-4 border border-[#E6E6E6] rounded-md shadow-sm p-3 hover:shadow-md transition-shadow flex items-center gap-3" style={{ borderLeftColor: cfg.color }}>
               <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: cfg.color }}>
-                <Icon className="w-5 h-5 text-white" />
+                {key === 'supersapiens' ? <SuperSapiensIcon className="w-6 h-6" /> : <Icon className="w-5 h-5 text-white" />}
               </div>
               <div>
                 <p className="text-xs font-semibold text-[#555555] uppercase tracking-wide">{cfg.label}</p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, Edit3, HardDrive, Monitor, Zap, AlertTriangle } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { STATUS_CONFIG, FRENTE_CONFIG, RESULTADO_CONFIG, NATUREZA_CONFIG, CATEGORIA_CONFIG } from './MetricsCards';
+import SuperSapiensIcon from './SuperSapiensIcon';
 
 const RISCO_OPTIONS = [
   { value: 'alto', label: 'Alto' },
@@ -61,7 +62,7 @@ export default function ChangeModal({ change, mode, onClose, onSave, onDelete })
   const isReadonly = mode === 'view' && !editing;
   const statusCfg = STATUS_CONFIG[form.status] || STATUS_CONFIG.planejada;
   const frenteInfo = FRENTE_OPTIONS.find(t => t.value === form.frente_atuacao);
-  const FrenteIcon = frenteInfo?.icon || Monitor;
+  const FrenteIcon = form.frente_atuacao === 'supersapiens' ? () => <SuperSapiensIcon className="w-5 h-5" /> : frenteInfo?.icon || Monitor;
   const showResultado = form.status === 'concluida';
   const showVersao = form.ambiente_homologado === 'sim';
 

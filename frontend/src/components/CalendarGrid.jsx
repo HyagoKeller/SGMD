@@ -1,8 +1,15 @@
 import React from 'react';
 import { STATUS_CONFIG, FRENTE_CONFIG, NATUREZA_CONFIG, CATEGORIA_CONFIG } from './MetricsCards';
 import { HardDrive, Monitor, Zap, AlertTriangle } from 'lucide-react';
+import SuperSapiensIcon from './SuperSapiensIcon';
 
-const FRENTE_ICONS = { infraestrutura: HardDrive, sistemas: Monitor, supersapiens: Zap };
+const FRENTE_ICONS = { infraestrutura: HardDrive, sistemas: Monitor, supersapiens: null };
+
+function FrenteIcon({ frenteKey, className = "w-3 h-3", style = {} }) {
+  if (frenteKey === 'supersapiens') return <SuperSapiensIcon className={className} style={style} />;
+  const Icon = FRENTE_ICONS[frenteKey] || Monitor;
+  return <Icon className={className} style={style} />;
+}
 
 function getFrente(change) {
   return change.frente_atuacao || change.tipo_mudanca || 'sistemas';
@@ -31,14 +38,22 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
 
   const formatDateStr = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
+  const buildTooltip = (change) => {
+    const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
+    const frenteKey = getFrenteKey(change);
+    const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
+    const categoria = CATEGORIA_CONFIG[change.categoria_mudanca];
+    const risco = change.risco === 'alto' ? ' | RISCO ALTO' : '';
+    return `${change.titulo} | ${frenteCfg.label} | ${statusCfg.label}${categoria ? ' | ' + categoria.label : ''}${risco}`;
+  };
+
   const renderEventBadge = (change, compact) => {
     const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
     const frenteKey = getFrenteKey(change);
     const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
-    const FIcon = FRENTE_ICONS[frenteKey] || Monitor;
-    const natureza = NATUREZA_CONFIG[change.natureza_mudanca || change.categoria_itil] || {};
     const categoria = CATEGORIA_CONFIG[change.categoria_mudanca] || {};
     const isHighRisk = change.risco === 'alto';
+    const tooltip = buildTooltip(change);
 
     if (compact) {
       return (
@@ -48,8 +63,9 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
           onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
           className="text-[10px] font-semibold px-1 py-0.5 rounded truncate w-full text-left flex items-center gap-0.5"
           style={{ backgroundColor: statusCfg.color, color: statusCfg.darkText ? '#333333' : '#ffffff' }}
+          title={tooltip}
         >
-          <FIcon className="w-2.5 h-2.5 flex-shrink-0" />
+          <FrenteIcon frenteKey={frenteKey} className="w-2.5 h-2.5 flex-shrink-0" />
           <span className="truncate">{change.titulo}</span>
           {isHighRisk && <AlertTriangle className="w-2.5 h-2.5 flex-shrink-0 text-[#FDE68A]" />}
         </button>
@@ -63,23 +79,21 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
         onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
         className="text-xs w-full text-left rounded shadow-sm hover:shadow-md transition-shadow overflow-hidden border-l-[3px]"
         style={{ borderLeftColor: frenteCfg.color }}
-        title={`${change.titulo} | ${frenteCfg.label} | ${statusCfg.label}${isHighRisk ? ' | RISCO ALTO' : ''}`}
+        title={tooltip}
       >
         <div className="px-1.5 py-1 rounded-r" style={{ backgroundColor: statusCfg.color }}>
           <div className="flex items-center gap-1">
-            <FIcon className="w-3 h-3 flex-shrink-0" style={{ color: statusCfg.darkText ? '#333333' : '#ffffff' }} />
+            <FrenteIcon frenteKey={frenteKey} className="w-3 h-3 flex-shrink-0" style={{ color: statusCfg.darkText ? '#333333' : '#ffffff' }} />
             <span className="font-semibold truncate" style={{ color: statusCfg.darkText ? '#333333' : '#ffffff' }}>
               {change.titulo}
             </span>
             {isHighRisk && <AlertTriangle className="w-3 h-3 flex-shrink-0 text-[#FDE68A]" />}
           </div>
-          {(natureza.label || categoria.label) && (
+          {categoria.label && (
             <div className="flex items-center gap-1 mt-0.5">
-              {categoria.label && (
-                <span className="text-[9px] opacity-90 truncate" style={{ color: statusCfg.darkText ? '#555555' : '#E0E0E0' }}>
-                  {categoria.label}
-                </span>
-              )}
+              <span className="text-[9px] opacity-90 truncate" style={{ color: statusCfg.darkText ? '#555555' : '#E0E0E0' }}>
+                {categoria.label}
+              </span>
             </div>
           )}
         </div>

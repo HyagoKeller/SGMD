@@ -1,8 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { FRENTE_CONFIG } from './MetricsCards';
-import { CheckCircle, AlertTriangle, HardDrive, Monitor, Zap, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, AlertTriangle, HardDrive, Monitor, Eye, EyeOff } from 'lucide-react';
+import SuperSapiensIcon from './SuperSapiensIcon';
 
-const FRENTE_ICONS = { infraestrutura: HardDrive, sistemas: Monitor, supersapiens: Zap };
+function FrenteIconConflict({ frenteKey, className, style }) {
+  if (frenteKey === 'supersapiens') return <SuperSapiensIcon className={className} style={style} />;
+  const icons = { infraestrutura: HardDrive, sistemas: Monitor };
+  const Icon = icons[frenteKey] || Monitor;
+  return <Icon className={className} style={style} />;
+}
 
 function getFrente(change) {
   const f = change.frente_atuacao || change.tipo_mudanca || 'sistemas';
@@ -94,14 +100,13 @@ export default function ConflictAlert({ changes }) {
             <div className="mt-2 space-y-1.5">
               {conflict.changes.map(c => {
                 const frenteKey = getFrente(c);
-                const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
-                const FIcon = FRENTE_ICONS[frenteKey] || Monitor;
+                  const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
                 const startTime = (c.data_inicio || '').includes('T') ? (c.data_inicio || '').split('T')[1]?.substring(0,5) : '';
                 const endTime = (c.data_fim || '').includes('T') ? (c.data_fim || '').split('T')[1]?.substring(0,5) : '';
                 return (
                   <div key={c.id} className="flex items-center gap-2 text-xs text-[#333333]">
                     <div className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: frenteCfg.color }}>
-                      <FIcon className="w-3 h-3 text-white" />
+                      <FrenteIconConflict frenteKey={frenteKey} className="w-3 h-3 text-white" />
                     </div>
                     <span className="font-semibold">{frenteCfg.label}</span>
                     <span className="text-[#555555]">-</span>

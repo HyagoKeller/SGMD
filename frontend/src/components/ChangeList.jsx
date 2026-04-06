@@ -1,8 +1,14 @@
 import React from 'react';
 import { STATUS_CONFIG, FRENTE_CONFIG, CATEGORIA_CONFIG } from './MetricsCards';
-import { Clock, ArrowRight, HardDrive, Monitor, Zap, AlertTriangle } from 'lucide-react';
+import { Clock, ArrowRight, HardDrive, Monitor, AlertTriangle } from 'lucide-react';
+import SuperSapiensIcon from './SuperSapiensIcon';
 
-const FRENTE_ICONS = { infraestrutura: HardDrive, sistemas: Monitor, supersapiens: Zap };
+function FrenteIconList({ frenteKey, className, style }) {
+  if (frenteKey === 'supersapiens') return <SuperSapiensIcon className={className} style={style} />;
+  const icons = { infraestrutura: HardDrive, sistemas: Monitor };
+  const Icon = icons[frenteKey] || Monitor;
+  return <Icon className={className} style={style} />;
+}
 
 function getFrente(change) {
   const f = change.frente_atuacao || change.tipo_mudanca || 'sistemas';
@@ -27,7 +33,6 @@ export default function ChangeList({ changes, onSelectChange }) {
         const cfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
         const frenteKey = getFrente(change);
         const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
-        const FIcon = FRENTE_ICONS[frenteKey] || Monitor;
         const categoria = CATEGORIA_CONFIG[change.categoria_mudanca];
         const isHighRisk = change.risco === 'alto';
 
@@ -39,7 +44,7 @@ export default function ChangeList({ changes, onSelectChange }) {
             className="w-full text-left bg-white border border-[#E6E6E6] rounded-md p-3 hover:shadow-md transition-shadow flex items-start gap-3"
           >
             <div className="w-8 h-8 rounded-md flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: frenteCfg.color }}>
-              <FIcon className="w-4 h-4 text-white" />
+              <FrenteIconList frenteKey={frenteKey} className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
