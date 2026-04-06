@@ -74,7 +74,7 @@ export default function DashboardPage() {
 
     return changes.filter(c => {
       // Date filter based on calendar mode
-      const d = new Date(c.data_inicio + 'T00:00:00');
+      const d = new Date((c.data_inicio || '').substring(0, 10) + 'T00:00:00');
       let matchDate = false;
 
       if (calendarMode === 'semanal') {

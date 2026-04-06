@@ -25,7 +25,7 @@ const RESULTADO_CONFIG = {
 const NATUREZA_CONFIG = {
   planejada_normal: { label: 'Mudança Planejada' },
   baixo_risco: { label: 'Mudança de Baixo Risco' },
-  emergencial: { label: 'Emergencial' },
+  emergencial: { label: 'Mudança Emergencial' },
 };
 
 const CATEGORIA_CONFIG = {

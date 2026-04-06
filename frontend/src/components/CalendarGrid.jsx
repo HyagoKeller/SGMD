@@ -20,11 +20,13 @@ function getFrenteKey(change) {
   return f === 'sapiens' ? 'supersapiens' : f;
 }
 
+const RISCO_LABEL = { alto: 'Alto', medio: 'Medio', baixo: 'Baixo' };
+
 export default function CalendarGrid({ currentDate, changes, onSelectChange, viewMode }) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const today = new Date();
-  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
   const isToday = (y, m, d) => today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
 
@@ -38,62 +40,111 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
 
   const formatDateStr = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-  const buildTooltip = (change) => {
+  /* ========== EVENT BADGE - COMPACTO (semestral/anual) ========== */
+  const renderCompactBadge = (change) => {
     const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
     const frenteKey = getFrenteKey(change);
-    const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
-    const categoria = CATEGORIA_CONFIG[change.categoria_mudanca];
-    const risco = change.risco === 'alto' ? ' | RISCO ALTO' : '';
-    return `${change.titulo} | ${frenteCfg.label} | ${statusCfg.label}${categoria ? ' | ' + categoria.label : ''}${risco}`;
-  };
-
-  const renderEventBadge = (change, compact) => {
-    const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
-    const frenteKey = getFrenteKey(change);
-    const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
-    const categoria = CATEGORIA_CONFIG[change.categoria_mudanca] || {};
     const isHighRisk = change.risco === 'alto';
-    const tooltip = buildTooltip(change);
-
-    if (compact) {
-      return (
-        <button
-          key={change.id}
-          data-testid={`calendar-event-${change.id}`}
-          onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
-          className="text-[10px] font-semibold px-1 py-0.5 rounded truncate w-full text-left flex items-center gap-0.5"
-          style={{ backgroundColor: statusCfg.color, color: statusCfg.darkText ? '#333333' : '#ffffff' }}
-          title={tooltip}
-        >
-          <FrenteIcon frenteKey={frenteKey} className="w-2.5 h-2.5 flex-shrink-0" />
-          <span className="truncate">{change.titulo}</span>
-          {isHighRisk && <AlertTriangle className="w-2.5 h-2.5 flex-shrink-0 text-[#FDE68A]" />}
-        </button>
-      );
-    }
 
     return (
       <button
         key={change.id}
         data-testid={`calendar-event-${change.id}`}
         onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
-        className="text-xs w-full text-left rounded shadow-sm hover:shadow-md transition-shadow overflow-hidden border-l-[3px]"
-        style={{ borderLeftColor: frenteCfg.color }}
-        title={tooltip}
+        className="text-[10px] font-semibold px-1.5 py-0.5 rounded w-full text-left flex items-center gap-1"
+        style={{ backgroundColor: statusCfg.color, color: statusCfg.darkText ? '#333333' : '#ffffff' }}
       >
-        <div className="px-1.5 py-1 rounded-r" style={{ backgroundColor: statusCfg.color }}>
-          <div className="flex items-center gap-1">
-            <FrenteIcon frenteKey={frenteKey} className="w-3 h-3 flex-shrink-0" style={{ color: statusCfg.darkText ? '#333333' : '#ffffff' }} />
-            <span className="font-semibold truncate" style={{ color: statusCfg.darkText ? '#333333' : '#ffffff' }}>
+        <FrenteIcon frenteKey={frenteKey} className="w-2.5 h-2.5 flex-shrink-0" />
+        <span className="truncate flex-1">{change.titulo}</span>
+        {isHighRisk && (
+          <span className="flex items-center gap-0.5 flex-shrink-0">
+            <AlertTriangle className="w-3 h-3 text-[#E52207]" strokeWidth={2.5} />
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  /* ========== EVENT BADGE - DETALHADO (mensal/semanal) ========== */
+  const renderDetailedBadge = (change, isWeekly) => {
+    const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
+    const frenteKey = getFrenteKey(change);
+    const frenteCfg = FRENTE_CONFIG[frenteKey] || FRENTE_CONFIG.sistemas;
+    const naturezaCfg = NATUREZA_CONFIG[change.natureza_mudanca] || {};
+    const categoriaCfg = CATEGORIA_CONFIG[change.categoria_mudanca] || {};
+    const isHighRisk = change.risco === 'alto';
+    const textColor = statusCfg.darkText ? '#333333' : '#ffffff';
+    const subTextColor = statusCfg.darkText ? '#555555' : 'rgba(255,255,255,0.85)';
+
+    return (
+      <button
+        key={change.id}
+        data-testid={`calendar-event-${change.id}`}
+        onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
+        className="w-full text-left rounded-md shadow-sm hover:shadow-md transition-shadow overflow-hidden border-l-[3px] group"
+        style={{ borderLeftColor: frenteCfg.color }}
+      >
+        <div className="px-2 py-1.5 rounded-r" style={{ backgroundColor: statusCfg.color }}>
+          {/* Linha 1: Icone Frente + Titulo + Risco Alto */}
+          <div className="flex items-start gap-1">
+            <FrenteIcon frenteKey={frenteKey} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: textColor }} />
+            <span className={`font-bold leading-tight flex-1 ${isWeekly ? 'text-xs' : 'text-[11px]'}`} style={{ color: textColor }}>
               {change.titulo}
             </span>
-            {isHighRisk && <AlertTriangle className="w-3 h-3 flex-shrink-0 text-[#FDE68A]" />}
-          </div>
-          {categoria.label && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-[9px] opacity-90 truncate" style={{ color: statusCfg.darkText ? '#555555' : '#E0E0E0' }}>
-                {categoria.label}
+            {isHighRisk && (
+              <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#E52207] ml-0.5" data-testid={`risk-icon-${change.id}`}>
+                <AlertTriangle className="w-3 h-3 text-white" strokeWidth={2.5} />
               </span>
+            )}
+          </div>
+
+          {/* Linha 2: Tags - Natureza + Categoria + Risco */}
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {naturezaCfg.label && (
+              <span
+                className="text-[9px] leading-tight px-1 py-[1px] rounded-sm font-semibold"
+                style={{ backgroundColor: 'rgba(0,0,0,0.15)', color: textColor }}
+              >
+                {naturezaCfg.label}
+              </span>
+            )}
+            {categoriaCfg.label && (
+              <span
+                className="text-[9px] leading-tight px-1 py-[1px] rounded-sm font-medium"
+                style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: subTextColor }}
+              >
+                {categoriaCfg.label}
+              </span>
+            )}
+            {isHighRisk && (
+              <span className="text-[8px] leading-tight px-1 py-[1px] rounded-sm font-bold bg-[#E52207] text-white">
+                RISCO ALTO
+              </span>
+            )}
+          </div>
+
+          {/* Linha 3 (semanal): Status + Responsavel */}
+          {isWeekly && (
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              <span className="text-[9px] leading-tight font-medium" style={{ color: subTextColor }}>
+                {statusCfg.label}
+              </span>
+              {change.responsavel_negocio && (
+                <>
+                  <span className="text-[9px]" style={{ color: subTextColor }}>|</span>
+                  <span className="text-[9px] leading-tight" style={{ color: subTextColor }}>
+                    {change.responsavel_negocio}
+                  </span>
+                </>
+              )}
+              {change.sistemas_afetados && (
+                <>
+                  <span className="text-[9px]" style={{ color: subTextColor }}>|</span>
+                  <span className="text-[9px] leading-tight" style={{ color: subTextColor }}>
+                    {change.sistemas_afetados}
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -124,12 +175,12 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
             const dayChanges = getChangesForDate(dateStr);
             const isTd = isToday(d.getFullYear(), d.getMonth(), d.getDate());
             return (
-              <div key={i} className={`border-b border-r border-[#E6E6E6] p-2 min-h-[180px] ${isTd ? 'bg-[#D4E5FF]' : 'hover:bg-gray-50'}`}>
-                <div className={`text-sm font-semibold mb-1.5 ${isTd ? 'text-[#1351B4] font-bold' : 'text-[#333333]'}`}>
+              <div key={i} className={`border-b border-r border-[#E6E6E6] p-2 min-h-[200px] ${isTd ? 'bg-[#D4E5FF]' : 'hover:bg-gray-50'}`}>
+                <div className={`text-sm font-semibold mb-2 ${isTd ? 'text-[#1351B4] font-bold' : 'text-[#333333]'}`}>
                   {d.getDate()}/{d.getMonth() + 1}
                 </div>
-                <div className="space-y-1">
-                  {dayChanges.map(c => renderEventBadge(c, false))}
+                <div className="space-y-1.5">
+                  {dayChanges.map(c => renderDetailedBadge(c, true))}
                 </div>
               </div>
             );
@@ -171,9 +222,9 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
                     return <div key={day} className={`text-center text-[10px] rounded-sm ${isTd ? 'bg-[#1351B4] text-white font-bold' : hasEvents ? 'bg-[#D4E5FF] text-[#1351B4] font-semibold' : 'text-[#555555]'}`}>{day}</div>;
                   })}
                 </div>
-                <div className="space-y-1 max-h-[100px] overflow-y-auto">
-                  {monthChanges.slice(0, 4).map(c => renderEventBadge(c, true))}
-                  {monthChanges.length > 4 && <span className="text-[10px] text-[#555555]">+{monthChanges.length - 4} mais</span>}
+                <div className="space-y-1 max-h-[120px] overflow-y-auto">
+                  {monthChanges.slice(0, 5).map(c => renderCompactBadge(c))}
+                  {monthChanges.length > 5 && <span className="text-[10px] text-[#555555]">+{monthChanges.length - 5} mais</span>}
                 </div>
               </div>
             );
@@ -220,7 +271,7 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
     );
   }
 
-  // ====== MENSAL (padrão) ======
+  // ====== MENSAL (padrao) ======
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startDayOfWeek = firstDay.getDay();
@@ -246,14 +297,14 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
           return (
             <div
               key={cell.key}
-              className={`border-b border-r border-[#E6E6E6] p-1.5 md:p-2 min-h-[90px] md:min-h-[120px] transition-colors ${cell.day ? 'hover:bg-gray-50 cursor-pointer' : 'bg-[#f8f8f8]'} ${isTd ? 'bg-[#D4E5FF]' : ''}`}
+              className={`border-b border-r border-[#E6E6E6] p-1.5 md:p-2 min-h-[110px] md:min-h-[140px] transition-colors ${cell.day ? 'hover:bg-gray-50 cursor-pointer' : 'bg-[#f8f8f8]'} ${isTd ? 'bg-[#D4E5FF]' : ''}`}
               data-testid={cell.day ? `calendar-cell-${cell.day}` : undefined}
             >
               {cell.day && (
                 <>
                   <div className={`text-xs md:text-sm font-semibold mb-1 ${isTd ? 'text-[#1351B4] font-bold' : 'text-[#333333]'}`}>{cell.day}</div>
                   <div className="space-y-1">
-                    {dayChanges.slice(0, 3).map(c => renderEventBadge(c, false))}
+                    {dayChanges.slice(0, 3).map(c => renderDetailedBadge(c, false))}
                     {dayChanges.length > 3 && <span className="text-[10px] text-[#555555] font-medium">+{dayChanges.length - 3} mais</span>}
                   </div>
                 </>
