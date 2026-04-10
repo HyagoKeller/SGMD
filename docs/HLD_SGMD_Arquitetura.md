@@ -6,7 +6,7 @@
 |---|---|
 | **Documento** | HLD - High-Level Design |
 | **Sistema** | SGMD - Servico de Gerenciamento de Mudancas |
-| **Versao** | 1.0 |
+| **Versao** | 2.0 |
 | **Data** | Abril de 2026 |
 | **Classificacao** | Uso Interno - DTI |
 | **Repositorio** | https://github.com/HyagoKeller/SGMD |
@@ -40,9 +40,11 @@ O SGMD (Servico de Gerenciamento de Mudancas) e uma aplicacao web desenvolvida p
 |---|---|
 | **Visibilidade Operacional** | Calendario visual que consolida todas as mudancas agendadas em multiplas visoes (semanal, mensal, semestral e anual), permitindo a gestao proativa de janelas de manutencao |
 | **Prevencao de Conflitos** | Mecanismo automatico de deteccao de sobreposicao de agendamentos, alertando os responsaveis sobre intervencoes concorrentes no mesmo periodo |
-| **Rastreabilidade ITIL** | Cada mudanca registra campos normativos como Numero RFC, Categoria ITIL, Prioridade, Risco, Impacto, Plano de Rollback e Resultado da Conclusao, atendendo aos requisitos de auditoria |
-| **Classificacao por Dominio** | Segregacao de mudancas por tipo: Infraestrutura, Sistemas e SAPIENS, permitindo filtragem e responsabilizacao por equipe |
+| **Rastreabilidade ITIL** | Cada mudanca registra campos normativos como Numero RFC, Natureza da Mudanca, Categoria da Mudanca, Risco, Plano de Rollback (obrigatorio), Ambiente Homologado e Resultado da Conclusao, atendendo aos requisitos de auditoria |
+| **Classificacao por Dominio** | Segregacao de mudancas por Frente de Atuacao: Infraestrutura (verde), Sistemas (laranja) e SuperSapiens (azul), permitindo filtragem e responsabilizacao por equipe |
+| **Indicadores Visuais de Risco** | Mudancas de Risco Alto exibem icone de alerta e badge "RISCO ALTO" diretamente no calendario. Mudancas Emergenciais possuem fundo vermelho para destaque imediato |
 | **Exportacao de Dados** | Exportacao em formato CSV para integracao com ferramentas de relatorio e compliance |
+| **Integracao ITSM** | Integracao planejada com InvGate Service Management via API REST/OAuth2 para sincronizacao automatica de mudancas |
 
 ### 1.3 Escopo Funcional
 
@@ -50,10 +52,12 @@ O SGMD (Servico de Gerenciamento de Mudancas) e uma aplicacao web desenvolvida p
 - CRUD completo de Registros de Mudanca (RFC)
 - Calendario interativo com visoes semanal, mensal, semestral e anual
 - Painel de metricas por status (Planejada, Aprovada, Em Execucao, Concluida, Cancelada)
-- Painel de metricas por tipo (Infraestrutura, Sistemas, SAPIENS)
+- Painel de metricas por Frente de Atuacao (Infraestrutura, Sistemas, SuperSapiens)
 - Detalhamento de mudancas concluidas com resultado (Sucesso, Com Ressalvas, Sem Sucesso/Rollback)
 - Deteccao e alerta de conflitos de agendamento
-- Filtros por status e por tipo de mudanca
+- Filtros por status e por Frente de Atuacao
+- Campos ITIL v4: Natureza da Mudanca, Categoria da Mudanca, Risco, Plano de Rollback (obrigatorio), Ambiente Homologado, Versao do Sistema
+- Indicadores visuais no calendario: fundo vermelho para Mudancas Emergenciais, icone de alerta para Risco Alto, tags de Natureza/Categoria fixas nos blocos
 - Exportacao de dados em CSV
 - Seed automatico de usuario administrador na inicializacao
 
@@ -206,33 +210,37 @@ Armazena os usuarios do sistema com credenciais de autenticacao.
 
 ### 4.2 Colecao `changes`
 
-Armazena os registros de mudanca (RFC) com todos os campos ITIL.
+Armazena os registros de mudanca (RFC) com todos os campos ITIL v4.
 
 | Campo | Tipo | Obrigatorio | Descricao |
 |---|---|---|---|
 | `id` | String (UUID v4) | Sim | Identificador unico da mudanca |
 | `titulo` | String | Sim | Titulo descritivo da mudanca |
 | `descricao` | String | Nao | Descricao detalhada |
-| `tipo_mudanca` | String (enum) | Sim | `infraestrutura`, `sistemas`, `sapiens` |
-| `categoria_itil` | String (enum) | Sim | `normal`, `padrao`, `emergencial` |
+| `frente_atuacao` | String (enum) | Sim | `infraestrutura`, `sistemas`, `supersapiens` |
+| `natureza_mudanca` | String (enum) | Sim | `planejada_normal`, `baixo_risco`, `emergencial` |
+| `categoria_mudanca` | String (enum) | Sim | `novo_servico`, `preventiva`, `adaptativa`, `corretiva`, `evolutiva`, `desativacao`, `deploy`, `teste_vulnerabilidade` |
 | `status` | String (enum) | Sim | `planejada`, `aprovada`, `em_execucao`, `concluida`, `cancelada` |
-| `prioridade` | String (enum) | Sim | `critica`, `alta`, `media`, `baixa` |
 | `risco` | String (enum) | Sim | `alto`, `medio`, `baixo` |
-| `impacto` | String (enum) | Sim | `baixo`, `medio`, `alto`, `critico` |
-| `resultado_conclusao` | String (enum) | Condicional | `sucesso`, `sucesso_ressalvas`, `sem_sucesso` (obrigatorio quando status = `concluida`) |
+| `resultado_conclusao` | String (enum) | Condicional | `sucesso`, `sucesso_ressalvas`, `sem_sucesso` (quando status = `concluida`) |
 | `numero_rfc` | String | Nao | Codigo do Request for Change (ex: RFC-2026-0001) |
-| `responsavel` | String | Nao | Nome do responsavel tecnico pela execucao |
-| `aprovador` | String | Nao | Nome do membro do CAB que aprovou |
-| `sistema_afetado` | String | Nao | Sistema principal impactado |
+| `responsavel_negocio` | String | Nao | Nome do responsavel do negocio |
+| `sistemas_afetados` | String | Nao | Sistemas impactados |
 | `servicos_impactados` | String | Nao | Servicos afetados (ex: E-mail, VPN, Rede interna) |
 | `justificativa` | String | Nao | Motivo e necessidade da mudanca |
-| `plano_rollback` | String | Nao | Plano de reversao em caso de falha |
-| `data_inicio` | String (YYYY-MM-DD) | Sim | Data de inicio da intervencao |
-| `data_fim` | String (YYYY-MM-DD) | Nao | Data de termino da intervencao |
-| `janela_manutencao` | String | Nao | Janela de manutencao (ex: Sabado 22h - Domingo 06h) |
+| `plano_rollback` | String | Sim | Plano de reversao em caso de falha (obrigatorio) |
+| `ambiente_homologado` | String (enum) | Sim | `sim`, `nao`, `nao_se_aplica` |
+| `versao_sistema` | String | Condicional | Versao do sistema (quando ambiente_homologado = `sim`) |
+| `data_inicio` | String (datetime-local) | Sim | Data e hora de inicio da intervencao |
+| `data_fim` | String (datetime-local) | Nao | Data e hora de termino da intervencao |
 | `created_by` | String | Sim (auto) | Nome do usuario que criou o registro |
 | `created_at` | String (ISO 8601) | Sim (auto) | Timestamp de criacao |
 | `updated_at` | String (ISO 8601) | Sim (auto) | Timestamp da ultima atualizacao |
+
+**Indicadores visuais no calendario:**
+- Mudancas com `natureza_mudanca = emergencial`: fundo vermelho (#E52207) no badge do calendario
+- Mudancas com `risco = alto`: icone AlertTriangle em circulo vermelho + badge "RISCO ALTO"
+- Borda esquerda colorida por Frente de Atuacao: verde (Infraestrutura), laranja (Sistemas), azul (SuperSapiens)
 
 ### 4.3 Diagrama Entidade-Relacionamento Conceitual
 
@@ -251,23 +259,22 @@ erDiagram
         string id PK
         string titulo
         string descricao
-        string tipo_mudanca
-        string categoria_itil
+        string frente_atuacao
+        string natureza_mudanca
+        string categoria_mudanca
         string status
-        string prioridade
         string risco
-        string impacto
         string resultado_conclusao
         string numero_rfc
-        string responsavel
-        string aprovador
-        string sistema_afetado
+        string responsavel_negocio
+        string sistemas_afetados
         string servicos_impactados
         string justificativa
         string plano_rollback
+        string ambiente_homologado
+        string versao_sistema
         string data_inicio
         string data_fim
-        string janela_manutencao
         string created_by
         string created_at
         string updated_at
@@ -322,6 +329,58 @@ Authorization: Bearer <access_token>
 ```
 
 O Frontend nao possui acesso direto ao banco de dados.
+
+### 5.4 Integracao com InvGate Service Management (Planejada)
+
+Integracao planejada para sincronizacao bidirecional de mudancas com o InvGate Service Management (ITSM) da AGU.
+
+#### 5.4.1 Autenticacao
+
+| Parametro | Valor |
+|---|---|
+| **Tipo** | OAuth2 Client Credentials |
+| **Token URL** | `https://aguservicos.agu.gov.br/oauth/v2.0/access_token` |
+| **Grant Type** | `client_credentials` |
+| **Permissoes** | API OLAP + API Geral |
+
+#### 5.4.2 Endpoints Principais da API InvGate
+
+| Endpoint | Metodo | Funcao |
+|---|---|---|
+| `/api/v1/cf.fields.all` | GET | Lista todos os campos customizados (uid, label, tipo) |
+| `/api/v1/cf.fields.by.category` | GET | Campos customizados por categoria |
+| `/api/v1/requests` | GET | Lista requests/mudancas |
+| `/api/v1/requests` | POST | Cria nova request |
+| `/api/v1/requests/{id}` | GET | Detalhes de uma request |
+| `/api/v1/requests/{id}/custom-fields` | GET | Campos customizados de uma request |
+| `/api/v1/requests/types` | GET | Tipos de request |
+| `/api/v1/requests/statuses` | GET | Status disponiveis |
+
+#### 5.4.3 Mapeamento de Campos SGMD para InvGate
+
+Os campos nativos do InvGate (title, description, status) sao mapeados diretamente. Os campos ITIL personalizados do SGMD (Frente de Atuacao, Natureza, Categoria, Risco, Rollback, etc.) devem ser mapeados para campos customizados do InvGate, identificados por `uid` (ID unico). O mapeamento exato sera definido apos a descoberta dos campos via endpoint `/api/v1/cf.fields.all`.
+
+| Campo SGMD | Campo InvGate | Tipo |
+|---|---|---|
+| `titulo` | `title` | Nativo |
+| `descricao` | `description` | Nativo |
+| `status` | `status` | Nativo |
+| `frente_atuacao` | Custom field (uid: a definir) | Customizado |
+| `natureza_mudanca` | Custom field (uid: a definir) | Customizado |
+| `categoria_mudanca` | Custom field (uid: a definir) | Customizado |
+| `risco` | Custom field (uid: a definir) | Customizado |
+| `plano_rollback` | Custom field (uid: a definir) | Customizado |
+| `numero_rfc` | Custom field (uid: a definir) | Customizado |
+| `sistemas_afetados` | Custom field (uid: a definir) | Customizado |
+
+#### 5.4.4 Variaveis de Ambiente para Integracao InvGate
+
+| Variavel | Descricao | Obrigatoria |
+|---|---|---|
+| `INVGATE_TOKEN_URL` | URL para obter token OAuth2 | Sim |
+| `INVGATE_CLIENT_ID` | Client ID da credencial InvGate | Sim |
+| `INVGATE_CLIENT_SECRET` | Client Secret da credencial InvGate | Sim |
+| `INVGATE_BASE_URL` | URL base da API InvGate | Sim |
 
 ---
 
@@ -386,7 +445,8 @@ Todas as rotas sao prefixadas com `/api`.
 ### 7.2 Validacoes do Backend
 
 - O campo `status` e validado no servidor. Apenas os valores `planejada`, `aprovada`, `em_execucao`, `concluida` e `cancelada` sao aceitos. Qualquer outro valor resulta em erro HTTP 422.
-- Campos obrigatorios na criacao: `titulo` e `data_inicio`.
+- O campo `categoria_mudanca` e validado. Valores aceitos: `novo_servico`, `preventiva`, `adaptativa`, `corretiva`, `evolutiva`, `desativacao`, `deploy`, `teste_vulnerabilidade`.
+- Campos obrigatorios na criacao: `titulo`, `data_inicio`, `categoria_mudanca`, `plano_rollback`.
 - Campos automaticos (preenchidos pelo servidor): `id`, `created_at`, `updated_at`, `created_by`.
 
 ---

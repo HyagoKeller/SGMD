@@ -45,6 +45,9 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
     const statusCfg = STATUS_CONFIG[change.status] || STATUS_CONFIG.planejada;
     const frenteKey = getFrenteKey(change);
     const isHighRisk = change.risco === 'alto';
+    const isEmergencial = change.natureza_mudanca === 'emergencial';
+    const bgColor = isEmergencial ? '#E52207' : statusCfg.color;
+    const fgColor = isEmergencial ? '#ffffff' : (statusCfg.darkText ? '#333333' : '#ffffff');
 
     return (
       <button
@@ -52,13 +55,13 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
         data-testid={`calendar-event-${change.id}`}
         onClick={(e) => { e.stopPropagation(); onSelectChange(change); }}
         className="text-[10px] font-semibold px-1.5 py-0.5 rounded w-full text-left flex items-center gap-1"
-        style={{ backgroundColor: statusCfg.color, color: statusCfg.darkText ? '#333333' : '#ffffff' }}
+        style={{ backgroundColor: bgColor, color: fgColor }}
       >
         <FrenteIcon frenteKey={frenteKey} className="w-2.5 h-2.5 flex-shrink-0" />
         <span className="truncate flex-1">{change.titulo}</span>
         {isHighRisk && (
           <span className="flex items-center gap-0.5 flex-shrink-0">
-            <AlertTriangle className="w-3 h-3 text-[#E52207]" strokeWidth={2.5} />
+            <AlertTriangle className="w-3 h-3 text-[#FDE68A]" strokeWidth={2.5} />
           </span>
         )}
       </button>
@@ -73,8 +76,10 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
     const naturezaCfg = NATUREZA_CONFIG[change.natureza_mudanca] || {};
     const categoriaCfg = CATEGORIA_CONFIG[change.categoria_mudanca] || {};
     const isHighRisk = change.risco === 'alto';
-    const textColor = statusCfg.darkText ? '#333333' : '#ffffff';
-    const subTextColor = statusCfg.darkText ? '#555555' : 'rgba(255,255,255,0.85)';
+    const isEmergencial = change.natureza_mudanca === 'emergencial';
+    const bgColor = isEmergencial ? '#E52207' : statusCfg.color;
+    const textColor = isEmergencial ? '#ffffff' : (statusCfg.darkText ? '#333333' : '#ffffff');
+    const subTextColor = isEmergencial ? 'rgba(255,255,255,0.85)' : (statusCfg.darkText ? '#555555' : 'rgba(255,255,255,0.85)');
 
     return (
       <button
@@ -84,7 +89,7 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
         className="w-full text-left rounded-md shadow-sm hover:shadow-md transition-shadow overflow-hidden border-l-[3px] group"
         style={{ borderLeftColor: frenteCfg.color }}
       >
-        <div className="px-2 py-1.5 rounded-r" style={{ backgroundColor: statusCfg.color }}>
+        <div className="px-2 py-1.5 rounded-r" style={{ backgroundColor: bgColor }}>
           {/* Linha 1: Icone Frente + Titulo + Risco Alto */}
           <div className="flex items-start gap-1">
             <FrenteIcon frenteKey={frenteKey} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: textColor }} />
@@ -92,7 +97,7 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
               {change.titulo}
             </span>
             {isHighRisk && (
-              <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#E52207] ml-0.5" data-testid={`risk-icon-${change.id}`}>
+              <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#8A100B] ml-0.5" data-testid={`risk-icon-${change.id}`}>
                 <AlertTriangle className="w-3 h-3 text-white" strokeWidth={2.5} />
               </span>
             )}
@@ -103,7 +108,7 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
             {naturezaCfg.label && (
               <span
                 className="text-[9px] leading-tight px-1 py-[1px] rounded-sm font-semibold"
-                style={{ backgroundColor: 'rgba(0,0,0,0.15)', color: textColor }}
+                style={{ backgroundColor: isEmergencial ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.15)', color: textColor }}
               >
                 {naturezaCfg.label}
               </span>
@@ -111,13 +116,13 @@ export default function CalendarGrid({ currentDate, changes, onSelectChange, vie
             {categoriaCfg.label && (
               <span
                 className="text-[9px] leading-tight px-1 py-[1px] rounded-sm font-medium"
-                style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: subTextColor }}
+                style={{ backgroundColor: isEmergencial ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.1)', color: subTextColor }}
               >
                 {categoriaCfg.label}
               </span>
             )}
             {isHighRisk && (
-              <span className="text-[8px] leading-tight px-1 py-[1px] rounded-sm font-bold bg-[#E52207] text-white">
+              <span className={`text-[8px] leading-tight px-1 py-[1px] rounded-sm font-bold text-white ${isEmergencial ? 'bg-[#8A100B]' : 'bg-[#E52207]'}`}>
                 RISCO ALTO
               </span>
             )}

@@ -37,8 +37,8 @@ Criar um frontend de calendário web para mudanças programadas (SGMD) usando o 
 - [x] Ícone de Risco Alto (AlertTriangle) visível no calendário
 - [x] Logo SuperSapiens com fundo escuro para contraste
 - [x] "Mudança Emergencial" renomeado corretamente
-- [x] Filtro de datas corrigido para datetime-local
-- [x] HLD documento de arquitetura
+- [x] Fundo vermelho para Mudanças Emergenciais no calendário
+- [x] Documentação HLD atualizada para v2.0 (campos ITIL v4, indicadores visuais, integração InvGate)
 
 ## Backlog (P1/P2)
 - [ ] **P1**: Integração ITSM Invagate (aguardando API keys do usuário)
