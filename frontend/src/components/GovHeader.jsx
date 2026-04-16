@@ -30,9 +30,12 @@ export default function GovHeader() {
       </div>
       {/* Sub Header */}
       <div className="bg-[#1351B4] text-white py-4 px-6 flex justify-between items-center">
-        <h1 className="text-lg md:text-xl font-bold tracking-tight">
-          Serviço de Gerenciamento de Mudanças - SGMD
-        </h1>
+        <div className="flex items-center gap-3">
+          <img src="/aguservicos-logo.png" alt="AGU Serviços" className="w-10 h-10 object-contain" />
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">
+            Serviço de Gerenciamento de Mudanças - SGMD
+          </h1>
+        </div>
       </div>
     </header>
   );

@@ -38,7 +38,10 @@ export default function LoginPage() {
 
       {/* Sub Header */}
       <div className="bg-[#1351B4] text-white py-4 px-6">
-        <h1 className="text-lg font-semibold">Serviço de Gerenciamento de Mudanças - SGMD</h1>
+        <div className="flex items-center gap-3">
+          <img src="/aguservicos-logo.png" alt="AGU Serviços" className="w-10 h-10 object-contain" />
+          <h1 className="text-lg font-semibold">Serviço de Gerenciamento de Mudanças - SGMD</h1>
+        </div>
       </div>
 
       {/* Login Form */}
@@ -47,9 +50,6 @@ export default function LoginPage() {
           <div className="border-t-4 border-[#1351B4] -mt-8 -mx-8 mb-6 rounded-t-md"></div>
           
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
-              <img src="/aguservicos-logo.png" alt="AGU Serviços" className="w-20 h-20 object-contain" />
-            </div>
             <h2 className="text-xl font-bold text-[#333333]">Bem-vindo(a) ao Serviço de Gerenciamento de Mudanças - SGMD</h2>
             <p className="text-sm text-[#555555] mt-1">Informe suas credenciais para continuar</p>
           </div>
