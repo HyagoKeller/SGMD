@@ -47,8 +47,8 @@ export default function LoginPage() {
           <div className="border-t-4 border-[#1351B4] -mt-8 -mx-8 mb-6 rounded-t-md"></div>
           
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#1351B4] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-white" />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <img src="/aguservicos-logo.png" alt="AGU Serviços" className="w-20 h-20 object-contain" />
             </div>
             <h2 className="text-xl font-bold text-[#333333]">Bem-vindo(a) ao Serviço de Gerenciamento de Mudanças - SGMD</h2>
             <p className="text-sm text-[#555555] mt-1">Informe suas credenciais para continuar</p>
