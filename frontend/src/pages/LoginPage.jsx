@@ -32,7 +32,7 @@ export default function LoginPage() {
       <div className="bg-[#071D41] text-white py-2 px-6 flex items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm text-[#C5D4EB]">Acesse já o AGU Serviços:</span>
-          <a href="https://aguservicos.agu.gov.br" target="_blank" rel="noopener noreferrer" className="font-extrabold text-lg tracking-wide hover:text-[#C5D4EB] transition-colors">aguservicos.agu.gov.br</a>
+          <a href="https://aguservicos.agu.gov.br" target="_blank" rel="noopener noreferrer" className="text-sm tracking-wide hover:text-[#C5D4EB] transition-colors">aguservicos.agu.gov.br</a>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export default function LoginPage() {
             <div className="w-16 h-16 bg-[#1351B4] rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-[#333333]">Acesso ao Sistema</h2>
+            <h2 className="text-xl font-bold text-[#333333]">Bem-vindo(a) ao Serviço de Gerenciamento de Mudanças - SGMD</h2>
             <p className="text-sm text-[#555555] mt-1">Informe suas credenciais para continuar</p>
           </div>
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
                 <Input
                   data-testid="login-email-input"
                   type="email"
-                  placeholder="seu@email.gov.br"
+                  placeholder="seuemail@agu.gov.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 border-[#E6E6E6] focus:ring-2 focus:ring-[#1351B4]"

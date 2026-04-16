@@ -11,7 +11,7 @@ export default function GovHeader() {
       <div className="bg-[#071D41] text-white py-2 px-6 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm text-[#C5D4EB]">Acesse já o AGU Serviços:</span>
-          <a href="https://aguservicos.agu.gov.br" target="_blank" rel="noopener noreferrer" className="font-extrabold text-lg tracking-wide hover:text-[#C5D4EB] transition-colors">aguservicos.agu.gov.br</a>
+          <a href="https://aguservicos.agu.gov.br" target="_blank" rel="noopener noreferrer" className="text-sm tracking-wide hover:text-[#C5D4EB] transition-colors">aguservicos.agu.gov.br</a>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
