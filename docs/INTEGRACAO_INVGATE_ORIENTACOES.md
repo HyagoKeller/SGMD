@@ -17,7 +17,7 @@ O SGMD sera integrado ao InvGate Service Management para **sincronizar automatic
 ```
 InvGate Service Management
         |
-        | (API REST / OAuth2)
+        | (API REST / HTTP Basic Auth)
         |
         v
    Backend SGMD (FastAPI)
@@ -38,19 +38,47 @@ InvGate Service Management
 
 ---
 
-## 2. Credenciais de Acesso a API (Ja Configuradas)
+## 2. Metodo de Autenticacao - HTTP Basic Auth (Credenciais Basicas)
 
-As credenciais OAuth2 ja foram geradas. Seguem os dados para referencia:
+A autenticacao com a API do InvGate utiliza **HTTP Basic Authentication** (Credenciais basicas), configurada nas **Credenciais Globais** do InvGate.
 
-| Parametro | Valor |
+> **IMPORTANTE**: O metodo anterior (OAuth2 Bearer Token) foi **removido**. A integracao utiliza exclusivamente HTTP Basic Auth.
+
+### 2.1 Configuracao no InvGate
+
+Acesse no InvGate: **Integracoes > Credenciais globais**
+
+| Campo | Valor |
 |---|---|
-| **Tipo de Autenticacao** | OAuth2 - Client Credentials |
-| **Client ID** | `019d680b-1dd0-732a-b49e-0180a8f0e5b4` |
-| **Grant Type** | `client_credentials` |
-| **Token URL** | `https://aguservicos.agu.gov.br/oauth/v2.0/access_token` |
-| **Permissoes** | API OLAP + API Geral |
+| **Alias** | SGMD-Integracao |
+| **Descricao** | Credencial para integracao com o Calendario SGMD |
+| **Autenticacao** | HTTP (Credenciais basicas) |
+| **Usuario** | Keller |
+| **Senha** | (configurada no InvGate) |
 
-> **Nota**: O Client Secret deve ser armazenado de forma segura e nao deve ser compartilhado por e-mail ou mensageiro.
+### 2.2 Configuracao no SGMD (backend/.env)
+
+| Variavel | Descricao |
+|---|---|
+| `INVGATE_BASE_URL` | URL base do InvGate (ex: `https://aguservicos.agu.gov.br`) |
+| `INVGATE_USER` | Usuario configurado nas Credenciais Globais do InvGate |
+| `INVGATE_PASSWORD` | Senha do usuario |
+
+### 2.3 Como Funciona a Autenticacao
+
+Todas as chamadas a API do InvGate incluem o header HTTP `Authorization` com as credenciais codificadas em Base64:
+
+```
+Authorization: Basic base64(usuario:senha)
+```
+
+Exemplo pratico:
+```
+GET https://aguservicos.agu.gov.br/api/v1/requests
+Authorization: Basic S2VsbGVyOkp4S1IyR1ZRSUz5QlczVW0=
+```
+
+> O SGMD gera esse header automaticamente a partir das variaveis `INVGATE_USER` e `INVGATE_PASSWORD`.
 
 ---
 
@@ -80,13 +108,13 @@ Os campos personalizados do processo de mudanca no InvGate possuem um **UID** (i
 A forma mais direta e acessar o endpoint da API:
 ```
 GET https://aguservicos.agu.gov.br/api/v1/cf.fields.all
-Authorization: Bearer <token>
+Authorization: Basic base64(usuario:senha)
 ```
 
 Ou, para campos de uma categoria especifica:
 ```
 GET https://aguservicos.agu.gov.br/api/v1/cf.fields.by.category?category_id=<ID>
-Authorization: Bearer <token>
+Authorization: Basic base64(usuario:senha)
 ```
 
 A resposta retornara uma lista com todos os campos customizados, incluindo `uid`, `label` (nome) e `type` (tipo).
@@ -135,7 +163,7 @@ O SGMD possui os seguintes status. Informar qual status do InvGate corresponde a
 **Como obter os status do InvGate:**
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests/statuses
-Authorization: Bearer <token>
+Authorization: Basic base64(usuario:senha)
 ```
 
 ### 3.5 Mapeamento de Valores de Listas
@@ -194,58 +222,48 @@ Caso existam campos no InvGate que nao estao listados na tabela de mapeamento (s
 
 ## 5. Endpoints da API InvGate - Referencia Rapida
 
-Para os analistas que desejam consultar a API diretamente:
+Todas as chamadas utilizam **HTTP Basic Auth**. O header `Authorization` e gerado automaticamente pelo SGMD.
 
-### 5.1 Obter Token de Acesso
-```
-POST https://aguservicos.agu.gov.br/oauth/v2.0/access_token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=client_credentials
-&client_id=019d680b-1dd0-732a-b49e-0180a8f0e5b4
-&client_secret=<CLIENT_SECRET>
-```
-
-### 5.2 Listar Campos Customizados
+### 5.1 Listar Campos Customizados
 ```
 GET https://aguservicos.agu.gov.br/api/v1/cf.fields.all
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.3 Listar Campos por Categoria
+### 5.2 Listar Campos por Categoria
 ```
 GET https://aguservicos.agu.gov.br/api/v1/cf.fields.by.category?category_id=<ID>
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.4 Listar Status Disponiveis
+### 5.3 Listar Status Disponiveis
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests/statuses
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.5 Listar Tipos de Request
+### 5.4 Listar Tipos de Request
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests/types
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.6 Listar Mudancas (Requests)
+### 5.5 Listar Mudancas (Requests)
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests?category_id=<ID>
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.7 Detalhes de uma Mudanca
+### 5.6 Detalhes de uma Mudanca
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests/<REQUEST_ID>
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
-### 5.8 Campos Customizados de uma Mudanca
+### 5.7 Campos Customizados de uma Mudanca
 ```
 GET https://aguservicos.agu.gov.br/api/v1/requests/<REQUEST_ID>/custom-fields
-Authorization: Bearer <token>
+Authorization: Basic base64(Keller:<senha>)
 ```
 
 > **Documentacao completa**: https://releases.invgate.com/service-desk/api/
@@ -254,6 +272,7 @@ Authorization: Bearer <token>
 
 ## 6. Checklist Resumo para os Analistas
 
+- [ ] **Credenciais globais** configuradas no InvGate (HTTP Basic Auth, usuario: Keller)
 - [ ] **Category ID** da(s) categoria(s) de mudanca no InvGate
 - [ ] **Tabela de mapeamento de campos** preenchida (secao 3.3)
 - [ ] **Tabela de mapeamento de status** preenchida (secao 3.4)

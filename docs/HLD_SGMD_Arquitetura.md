@@ -330,18 +330,19 @@ Authorization: Bearer <access_token>
 
 O Frontend nao possui acesso direto ao banco de dados.
 
-### 5.4 Integracao com InvGate Service Management (Planejada)
+### 5.4 Integracao com InvGate Service Management
 
-Integracao planejada para sincronizacao bidirecional de mudancas com o InvGate Service Management (ITSM) da AGU.
+Integracao para sincronizacao de mudancas com o InvGate Service Management (ITSM) da AGU.
 
 #### 5.4.1 Autenticacao
 
 | Parametro | Valor |
 |---|---|
-| **Tipo** | OAuth2 Client Credentials |
-| **Token URL** | `https://aguservicos.agu.gov.br/oauth/v2.0/access_token` |
-| **Grant Type** | `client_credentials` |
-| **Permissoes** | API OLAP + API Geral |
+| **Tipo** | HTTP Basic Auth (Credenciais basicas) |
+| **Usuario** | Keller |
+| **Configuracao no InvGate** | Integracoes > Credenciais globais > HTTP (Credenciais basicas) |
+
+> O metodo OAuth2 Bearer Token foi removido. A integracao utiliza exclusivamente HTTP Basic Auth conforme configurado nas Credenciais Globais do InvGate.
 
 #### 5.4.2 Endpoints Principais da API InvGate
 
@@ -377,10 +378,9 @@ Os campos nativos do InvGate (title, description, status) sao mapeados diretamen
 
 | Variavel | Descricao | Obrigatoria |
 |---|---|---|
-| `INVGATE_TOKEN_URL` | URL para obter token OAuth2 | Sim |
-| `INVGATE_CLIENT_ID` | Client ID da credencial InvGate | Sim |
-| `INVGATE_CLIENT_SECRET` | Client Secret da credencial InvGate | Sim |
 | `INVGATE_BASE_URL` | URL base da API InvGate | Sim |
+| `INVGATE_USER` | Usuario configurado nas Credenciais Globais do InvGate (HTTP Basic Auth) | Sim |
+| `INVGATE_PASSWORD` | Senha do usuario | Sim |
 
 ---
 
