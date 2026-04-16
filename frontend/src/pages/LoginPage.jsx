@@ -30,7 +30,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#f8f8f8] flex flex-col" data-testid="login-page">
       {/* Top Header */}
       <div className="bg-[#071D41] text-white py-2 px-6 flex items-center">
-        <span className="font-extrabold text-lg tracking-wide">aguservicos.agu.gov.br</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#C5D4EB]">Acesse já o AGU Serviços:</span>
+          <a href="https://aguservicos.agu.gov.br" target="_blank" rel="noopener noreferrer" className="font-extrabold text-lg tracking-wide hover:text-[#C5D4EB] transition-colors">aguservicos.agu.gov.br</a>
+        </div>
       </div>
 
       {/* Sub Header */}
