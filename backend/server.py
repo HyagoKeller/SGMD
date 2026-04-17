@@ -15,6 +15,8 @@ import bcrypt
 import jwt
 import csv
 import io
+import base64
+import secrets
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Literal
@@ -71,6 +73,28 @@ async def get_current_user(request: Request) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
+def verify_basic_auth(request: Request) -> bool:
+    """Verifica HTTP Basic Auth com as credenciais do InvGate (INVGATE_USER/INVGATE_PASSWORD)."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(auth_header[6:]).decode("utf-8")
+        username, password = decoded.split(":", 1)
+        expected_user = os.environ.get("INVGATE_USER", "")
+        expected_pass = os.environ.get("INVGATE_PASSWORD", "")
+        return secrets.compare_digest(username, expected_user) and secrets.compare_digest(password, expected_pass)
+    except Exception:
+        return False
+
+async def get_user_or_integration(request: Request) -> dict:
+    """Autenticacao flexivel: aceita JWT (cookie/Bearer) OU HTTP Basic Auth (InvGate)."""
+    # Tentar Basic Auth primeiro (integracao InvGate)
+    if verify_basic_auth(request):
+        return {"_id": "invgate", "email": "invgate@integracao.sgmd", "name": "InvGate ITSM", "role": "integration"}
+    # Senao, tentar JWT
+    return await get_current_user(request)
+
 # --- Auth Models ---
 class LoginRequest(BaseModel):
     email: str
@@ -95,11 +119,11 @@ class ChangeCreate(BaseModel):
     status: str = "planejada"
     frente_atuacao: str = "sistemas"  # infraestrutura, sistemas, supersapiens
     natureza_mudanca: str = "planejada_normal"  # planejada_normal, baixo_risco, emergencial
-    categoria_mudanca: str  # required
+    categoria_mudanca: str = "corretiva"
     risco: str = "medio"
     numero_rfc: str = ""
     justificativa: str = ""
-    plano_rollback: str
+    plano_rollback: str = ""
     servicos_impactados: str = ""
     resultado_conclusao: str = ""
     ambiente_homologado: str = "nao_se_aplica"  # sim, nao, nao_se_aplica
@@ -192,13 +216,13 @@ async def logout(response: Response):
 # --- Changes CRUD ---
 @api_router.get("/changes")
 async def get_changes(request: Request):
-    await get_current_user(request)
+    await get_user_or_integration(request)
     changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
     return changes
 
 @api_router.post("/changes", status_code=201)
 async def create_change(change: ChangeCreate, request: Request):
-    user = await get_current_user(request)
+    user = await get_user_or_integration(request)
     doc = change.model_dump()
     doc["id"] = str(uuid.uuid4())
     doc["created_at"] = datetime.now(timezone.utc).isoformat()
@@ -210,7 +234,7 @@ async def create_change(change: ChangeCreate, request: Request):
 
 @api_router.put("/changes/{change_id}")
 async def update_change(change_id: str, change: ChangeUpdate, request: Request):
-    await get_current_user(request)
+    await get_user_or_integration(request)
     update_data = {k: v for k, v in change.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     result = await db.changes.update_one({"id": change_id}, {"$set": update_data})
@@ -221,7 +245,7 @@ async def update_change(change_id: str, change: ChangeUpdate, request: Request):
 
 @api_router.delete("/changes/{change_id}")
 async def delete_change(change_id: str, request: Request):
-    await get_current_user(request)
+    await get_user_or_integration(request)
     result = await db.changes.delete_one({"id": change_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Mudança não encontrada")
@@ -229,7 +253,7 @@ async def delete_change(change_id: str, request: Request):
 
 @api_router.get("/changes/export/csv")
 async def export_csv(request: Request):
-    await get_current_user(request)
+    await get_user_or_integration(request)
     changes = await db.changes.find({}, {"_id": 0}).to_list(5000)
     output = io.StringIO()
     writer = csv.writer(output)

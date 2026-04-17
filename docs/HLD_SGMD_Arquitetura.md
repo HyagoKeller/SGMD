@@ -332,17 +332,78 @@ O Frontend nao possui acesso direto ao banco de dados.
 
 ### 5.4 Integracao com InvGate Service Management
 
-Integracao para sincronizacao de mudancas com o InvGate Service Management (ITSM) da AGU.
+Integracao ativa para recepcao automatica de mudancas do InvGate Service Management (ITSM) da AGU.
 
-#### 5.4.1 Autenticacao
+#### 5.4.1 Fluxo da Integracao
+
+O InvGate envia mudancas diretamente para o SGMD via Web Service (workflow):
+
+```
+InvGate (Workflow: Formulario -> Web Service)
+        |
+        | POST https://sgmd.agu.gov.br/api/changes
+        | Authorization: Basic (Credenciais salvas: SGMD-Integracao)
+        | Content-Type: application/json
+        |
+        v
+   Backend SGMD (FastAPI)
+        |
+        v
+   MongoDB (changes) -> Calendario
+```
+
+#### 5.4.2 Autenticacao
 
 | Parametro | Valor |
 |---|---|
 | **Tipo** | HTTP Basic Auth (Credenciais basicas) |
+| **Modo** | Credenciais salvas (configuradas no InvGate) |
+| **Credencial** | SGMD-Integracao |
 | **Usuario** | Keller |
-| **Configuracao no InvGate** | Integracoes > Credenciais globais > HTTP (Credenciais basicas) |
 
-> O metodo OAuth2 Bearer Token foi removido. A integracao utiliza exclusivamente HTTP Basic Auth conforme configurado nas Credenciais Globais do InvGate.
+> **IMPORTANTE**: OAuth2 Bearer Token foi **completamente removido** da integracao. O SGMD aceita HTTP Basic Auth nas credenciais configuradas no InvGate. Nenhum token e gerado por requisicao.
+
+#### 5.4.3 Autenticacao Dual no Backend
+
+O backend aceita dois metodos de autenticacao nos endpoints `/api/changes`:
+
+| Metodo | Uso | Prioridade |
+|---|---|---|
+| **HTTP Basic Auth** | Chamadas do InvGate (integracao automatica) | Verificado primeiro |
+| **JWT Cookie/Bearer** | Usuarios logados no frontend SGMD | Verificado em seguida |
+
+Se Basic Auth for valido, a mudanca e registrada com `created_by = "InvGate ITSM"`.
+Se nenhum metodo for valido, retorna HTTP 401.
+
+#### 5.4.4 Mapeamento de Campos (InvGate -> SGMD)
+
+Campos configurados no Web Service do InvGate (Envio de variaveis):
+
+| Campo SGMD | Variavel InvGate |
+|---|---|
+| `titulo` | Inicio - Titulo da Mudanca |
+| `responsavel_negocio` | Inicio - Responsavel do Negocio |
+| `sistemas_afetados` | Inicio - Sistemas ou Areas Impactadas |
+| `data_inicio` | Inicio - Data e Hora de Inicio (Data e hora DMY) |
+| `data_fim` | Inicio - Data e Hora de Finalizacao (Data e hora DMY) |
+| `categoria_mudanca` | Categoria da Mudanca |
+
+Campos com valor padrao (quando nao enviados pelo InvGate):
+| Campo | Valor Padrao |
+|---|---|
+| `status` | `planejada` |
+| `frente_atuacao` | `sistemas` |
+| `natureza_mudanca` | `planejada_normal` |
+| `risco` | `medio` |
+| `plano_rollback` | (vazio) |
+
+#### 5.4.5 Variaveis de Ambiente
+
+| Variavel | Descricao |
+|---|---|
+| `INVGATE_BASE_URL` | URL base da API InvGate |
+| `INVGATE_USER` | Usuario para HTTP Basic Auth |
+| `INVGATE_PASSWORD` | Senha para HTTP Basic Auth |
 
 #### 5.4.2 Endpoints Principais da API InvGate
 

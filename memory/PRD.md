@@ -40,8 +40,12 @@ Criar um frontend de calendário web para mudanças programadas (SGMD) usando o 
 - [x] Fundo vermelho para Mudanças Emergenciais no calendário
 - [x] Documentação HLD atualizada para v2.0 (campos ITIL v4, indicadores visuais, integração InvGate)
 
+- [x] Integração InvGate ITSM via HTTP Basic Auth (POST /api/changes)
+- [x] Autenticação dual: JWT (frontend) + Basic Auth (InvGate) nos endpoints de changes
+- [x] Campos flexíveis para recepção de dados do InvGate (plano_rollback, categoria_mudanca opcionais)
+
 ## Backlog (P1/P2)
-- [ ] **P1**: Integração ITSM Invagate (aguardando API keys do usuário)
+- [ ] **P1**: Mapeamento visual de campos SGMD ↔ InvGate no frontend
 - [ ] **P2**: Dashboard analytics avançado
 - [ ] **P2**: Notificações de mudanças próximas
 - [ ] **P2**: Permissões granulares por papel
