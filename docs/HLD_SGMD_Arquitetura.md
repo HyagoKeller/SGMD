@@ -4,7 +4,7 @@
 
 | Metadado | Valor |
 |---|---|
-| **Responsável* | Hyago |
+| **Responsável** | Hyago |
 | **Sistema** | SGMD - Servico de Gerenciamento de Mudancas |
 | **Versao** | 2.0 |
 | **Data** | Abril de 2026 |
