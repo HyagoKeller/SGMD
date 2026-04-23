@@ -4,7 +4,7 @@
 
 | Metadado | Valor |
 |---|---|
-| **Documento** | HLD - High-Level Design |
+| **Responsável* | Hyago |
 | **Sistema** | SGMD - Servico de Gerenciamento de Mudancas |
 | **Versao** | 2.0 |
 | **Data** | Abril de 2026 |
